@@ -10,12 +10,29 @@ import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
 
+import downloadData from './Api';
+import config from './config';
+
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedOption: 'graph'
+      selectedOption: 'graph',
+      tankTypes: [],
+      countries: []
     };
+  }
+
+  async componentDidMount() {
+    const { tankTypes } = await downloadData(
+      config.API_ENDPOINTS.TANKTYPES,
+      {}
+    );
+    const { countries } = await downloadData(
+      config.API_ENDPOINTS.COUNTRIES,
+      {}
+    );
+    this.setState({ tankTypes, countries });
   }
 
   setSelectedOption(selectedOption) {
@@ -47,7 +64,7 @@ class App extends React.Component {
             </Col>
           </Row>
 
-          <Chart type={selectedOption}></Chart>
+          <Chart type={selectedOption} state={this.state}></Chart>
         </Container>
       </div>
     );
@@ -55,10 +72,11 @@ class App extends React.Component {
 }
 
 function Chart(props) {
+  const { tankTypes, countries } = props.state;
   if (props.type === 'graph') {
-    return <GraphView></GraphView>;
+    return <GraphView tankTypes={tankTypes} countries={countries}></GraphView>;
   } else {
-    return <BarChart></BarChart>;
+    return <BarChart tankTypes={tankTypes} countries={countries}></BarChart>;
   }
 }
 

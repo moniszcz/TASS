@@ -9,15 +9,13 @@ CORS(app)
 def hello_world():
     return "Hello, World!"
 
+@app.route("/tankTypes")
+def return_tanktypes():
+    return jsonify({ 'tankTypes': ['Foo', 'Bar', 'Baz'] })
 
-@app.route("/dataset1")
-def dataset1():
-    return jsonify(dataset1)
-
-
-@app.route("/dataset2")
-def dataset2():
-    return jsonify(dataset2)
+@app.route("/countries")
+def return_countries():
+    return jsonify({ 'countries': ['Poland', 'Germany', 'Finland'] })
 
 
 @app.route("/chart1")
@@ -32,9 +30,9 @@ def chart1_get():
     Ewentualnie użytkownik będzie miał możliwość wpisania
     maksymalnego progu ilości czołgów.
 
-    :param tank_name: 
+    :param tank_name:
     :type tank_name: str
-    :param threshold: 
+    :param threshold:
     :type threshold: int
 
     :rtype: Chart
@@ -42,7 +40,9 @@ def chart1_get():
     tank_name = request.args.get("tank_name")
     threshold = request.args.get("threshold")
 
-    return f"tank_name: {tank_name}, threshold: {threshold}"
+    print(f"tank_name: {tank_name}, threshold: {threshold}")
+
+    return jsonify(chart1)
 
 
 @app.route("/chart2")
@@ -52,14 +52,15 @@ def chart2_get():
 
     Kolejnym interesującym scenariuszem użycia aplikacji byłby wykres prezentujący ilości wyprodukowanych czołgów oraz ich eksport przez kraje wybrane przez użytkownika
 
-    :param country_names: 
+    :param country_names:
     :type country_names: List[str]
 
     :rtype: Chart
     """
-    country_names = request.args.get("country_names")
+    country_names = request.args.getlist("country_names[]")
+    print(f"country_names: {country_names}")
 
-    return f"country_names: {country_names}"
+    return jsonify(chart2)
 
 
 @app.route("/chart3")
@@ -69,14 +70,15 @@ def chart3_get():
 
     Użytkownik będzie miał możliwość wyboru z dropdownu kilku krajów dla których chce przeprowadzić porównanie, a następnie wykreślić na wykresie informacje o ilości i typach posiadanych czołgów
 
-    :param country_name: 
+    :param country_name:
     :type country_name: List[str]
 
     :rtype: Chart
     """
-    country_names = request.args.get("country_names")
+    country_names = request.args.getlist("country_names[]")
 
-    return f"country_names: {country_names}"
+    return jsonify(chart3)
+
 
 
 @app.route("/sellersGraph")
@@ -85,20 +87,22 @@ def sellers_graph_get():
 
     Graf przedstawiający powiązania producentów z krajami do których eksportowane są ich czołgi. Dodatkowo przewidziana opcja ograniczenia do krajów będących w sojuszu
 
-    :param country_name: 
+    :param country_name:
     :type country_name: str
-    :param k_core: 
+    :param k_core:
     :type k_core: int
     :param alliance_only: tylko kraje będące w sojuszu
     :type alliance_only: bool
 
     :rtype: Graph
     """
-    country_name = request.args.get("country_name")
+    print(request.args)
+    country_names = request.args.getlist("country_names[]")
     k_core = request.args.get("k_core")
     alliance_only = request.args.get("alliance_only")
 
-    return f"country_name: {country_name}, k_core: {k_core}, alliance_only: {alliance_only}"
+    print(f"country_names: {country_names}, k_core: {k_core}, alliance_only: {alliance_only}")
+    return jsonify(dataset1)
 
 
 @app.route("/tankGraph")
@@ -107,21 +111,84 @@ def tank_graph_get():
 
     Graf prezentujący powiązania między krajami posiadającymi ten sam typ czołgu, wybrany przez użytkownika. Ewentualna dodatkowa opcja zawężająca cały graf do państw będących ze sobą w sojuszu. Możliwość wyboru konkretnego k-rdzenia przez użytkownika
 
-    :param tank_name: 
+    :param tank_name:
     :type tank_name: str
-    :param k_core: 
+    :param k_core:
     :type k_core: int
     :param alliance_only: tylko kraje będące w sojuszu
     :type alliance_only: bool
 
     :rtype: Graph
     """
-    country_name = request.args.get("country_name")
+    tank_name = request.args.get("tank_name")
     k_core = request.args.get("k_core")
     alliance_only = request.args.get("alliance_only")
 
-    return f"country_name: {country_name}, k_core: {k_core}, alliance_only: {alliance_only}"
+    print(f"tank_name: {tank_name}, k_core: {k_core}, alliance_only: {alliance_only}")
+    return jsonify(dataset2)
 
+chart1 =  {
+  'labels': ['Poland', 'Germany', 'Russia'],
+  'datasets': [
+    {
+      'label': 'Number of tanks',
+      'backgroundColor': 'rgba(255,99,132,0.2)',
+      'borderColor': 'rgba(255,99,132,1)',
+      'borderWidth': 2,
+      'hoverBackgroundColor': 'rgba(255,99,132,0.4)',
+      'hoverBorderColor': 'rgba(255,99,132,1)',
+      'data': [65, 59, 80]
+    }
+  ]
+}
+
+chart2 =  {
+  'labels': ['Poland', 'Germany', 'Russia'],
+  'datasets': [
+    {
+      'label': 'Number of tanks',
+      'backgroundColor': 'rgba(255,99,132,0.2)',
+      'borderColor': 'rgba(255,99,132,1)',
+      'borderWidth': 2,
+      'hoverBackgroundColor': 'rgba(255,99,132,0.4)',
+      'hoverBorderColor': 'rgba(255,99,132,1)',
+      'data': [65, 59, 80]
+    },
+    {
+      'label': 'Number of exported tanks',
+      'backgroundColor': 'rgba(155,99,132,0.2)',
+      'borderColor': 'rgba(155,99,132,1)',
+      'borderWidth': 2,
+      'hoverBackgroundColor': 'rgba(155,99,132,0.4)',
+      'hoverBorderColor': 'rgba(155,99,132,1)',
+      'data': [20, 30, 40]
+    }
+  ]
+}
+
+chart3 =  {
+  'labels': ['Poland', 'Germany', 'Russia'],
+  'datasets': [
+    {
+      'label': 'T45',
+      'backgroundColor': 'rgba(255,99,132,0.2)',
+      'borderColor': 'rgba(255,99,132,1)',
+      'borderWidth': 2,
+      'hoverBackgroundColor': 'rgba(255,99,132,0.4)',
+      'hoverBorderColor': 'rgba(255,99,132,1)',
+      'data': [65, 59, 80]
+    },
+    {
+      'label': 'T55',
+      'backgroundColor': 'rgba(155,99,132,0.2)',
+      'borderColor': 'rgba(155,99,132,1)',
+      'borderWidth': 2,
+      'hoverBackgroundColor': 'rgba(155,99,132,0.4)',
+      'hoverBorderColor': 'rgba(155,99,132,1)',
+      'data': [20, 0, 40]
+    }
+  ]
+}
 
 dataset1 = {
     "nodes": [

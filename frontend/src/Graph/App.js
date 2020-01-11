@@ -1,10 +1,9 @@
 import React from 'react';
 
 import GraphSVG from './GraphSVG';
-
-import graph1 from '../data/graphs/graph1';
-import graph2 from '../data/graphs/graph2';
 import config from '../config';
+import downloadData from '../Api';
+
 import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
@@ -13,36 +12,57 @@ import Button from 'react-bootstrap/Button';
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.graphTypes = ['Alliance', 'Tank'];
-    this.tankTypes = ['Foo', 'Bar'];
-    this.tmp = true;
+    this.graphTypes = ['Sellers', 'Tank'];
     this.state = {
       dataset: null,
       graphType: this.graphTypes[0],
       kCore: '',
-      tynkType: '',
-      counter: 0
+      tankType: '',
+      counter: 0,
+      selectedCountries: []
     };
   }
 
-  async componentDidMount() {
-    const dataset = await this.downloadGraphData('dataset1');
-    console.log(dataset);
-    this.setState({ dataset });
-  }
-
-  async downloadGraphData(datasetOption) {
-    if (config.ENVDEV) {
-      const url = `${config.ENVAPIURL}/${datasetOption}`;
-      const response = await fetch(url);
-      const dataset = await response.json();
-      return dataset;
+  componentDidUpdate() {
+    if (!this.state.tankType) {
+      this.setState({ tankType: this.props.tankTypes[0] });
     }
   }
 
-  async updateData() {
-    const dataset = await this.downloadGraphData('dataset2');
-    await this.setState({ dataset });
+  render() {
+    const { graphType } = this.state;
+
+    if (graphType === 'Sellers') {
+      const form = this.getSellersForm();
+      const view = this.createView(form);
+      return view;
+    } else {
+      const form = this.getTankForm();
+      const view = this.createView(form);
+      return view;
+    }
+  }
+
+  async handleButtonClick() {
+    console.log('halo');
+    const { kCore, tankType, graphType, selectedCountries } = this.state;
+    console.log(this.state);
+
+    if (graphType === 'Sellers') {
+      const params = { country_names: selectedCountries, k_core: kCore };
+      const dataset = await downloadData(
+        config.API_ENDPOINTS.SELLERSGRAPH,
+        params
+      );
+      this.setState({ dataset });
+    } else {
+      const params = { k_core: kCore, tank_name: tankType };
+      const dataset = await downloadData(
+        config.API_ENDPOINTS.TANKGRAPH,
+        params
+      );
+      this.setState({ dataset });
+    }
   }
 
   handleKcoreChange(event) {
@@ -57,6 +77,14 @@ class App extends React.Component {
 
   handleTankTypeChange(event) {
     this.setState({ tankType: event.target.value });
+  }
+
+  handleCountryChange(event) {
+    const countries = [];
+    for (const el of event.target.selectedOptions) {
+      countries.push(el.value);
+    }
+    this.setState({ selectedCountries: countries });
   }
 
   /**
@@ -81,7 +109,7 @@ class App extends React.Component {
               </Form.Control>
             </Form.Group>
             {formInputs}
-            <Button onClick={() => this.updateData()}>Update</Button>
+            <Button onClick={() => this.handleButtonClick()}>Update</Button>
           </Form>
         </Col>
         <Col>
@@ -93,18 +121,33 @@ class App extends React.Component {
   }
 
   /**
-   * Creates a form for Alliance Graph Type.
+   * Creates a form for Sellers Graph Type.
    */
-  getAllianceForm() {
+  getSellersForm() {
+    const { countries } = this.props;
     return (
-      <Form.Group controlId="k-core">
-        <Form.Label>K-core</Form.Label>
-        <Form.Control
-          type="text"
-          value={this.state.kCore}
-          onChange={event => this.handleKcoreChange(event)}
-        ></Form.Control>
-      </Form.Group>
+      <>
+        <Form.Group controlId="country">
+          <Form.Label>Country</Form.Label>
+          <Form.Control
+            as="select"
+            multiple
+            onChange={event => this.handleCountryChange(event)}
+          >
+            {countries.map(element => (
+              <option>{element}</option>
+            ))}
+          </Form.Control>
+        </Form.Group>
+        <Form.Group controlId="k-core">
+          <Form.Label>K-core</Form.Label>
+          <Form.Control
+            type="text"
+            value={this.state.kCore}
+            onChange={event => this.handleKcoreChange(event)}
+          ></Form.Control>
+        </Form.Group>
+      </>
     );
   }
 
@@ -112,7 +155,7 @@ class App extends React.Component {
    * Creates form for Tank Graph Type
    */
   getTankForm() {
-    const { tankTypes } = this;
+    const { tankTypes } = this.props;
     return (
       <>
         <Form.Group controlId="k-core">
@@ -136,21 +179,6 @@ class App extends React.Component {
         </Form.Group>
       </>
     );
-  }
-
-  render() {
-    const { graphTypes } = this;
-    const { dataset, graphType, kCore } = this.state;
-
-    if (graphType === 'Alliance') {
-      const form = this.getAllianceForm();
-      const view = this.createView(form);
-      return view;
-    } else {
-      const form = this.getTankForm();
-      const view = this.createView(form);
-      return view;
-    }
   }
 }
 
