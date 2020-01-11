@@ -42,10 +42,11 @@ if __name__ == "__main__":
             instance.origin,
         )
 
+    print()
     for instance in session.query(Country).order_by(Country.id):
         print(f"{instance.name} - tanks in posession: {instance.country}")
         print(f"{instance.name} - tanks produced: {instance.origin}")
-
+    print()
     # alliance = session.query(Alliance).one()
     # print(alliance.country1)
     for instance in session.query(Alliance).all():
