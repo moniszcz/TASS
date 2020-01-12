@@ -54,5 +54,5 @@ class Alliance(Base):
 
 if __name__ == "__main__":
     # Create database.
-    engine = db.create_engine("sqlite:///foo.db")
+    engine = db.create_engine("sqlite:///main.db")
     Base.metadata.create_all(engine)
