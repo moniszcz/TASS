@@ -1,4 +1,5 @@
 import sqlalchemy as db
+from sqlalchemy import distinct
 from sqlalchemy.orm import sessionmaker
 
 from flask import Flask, request, jsonify
@@ -18,12 +19,13 @@ Session = sessionmaker(bind=engine)
 @app.route("/tankTypes")
 def return_tanktypes():
     # Connect to the database.
-
+    session = Session()
     # Query the tank types.
-
+    response = [instance.name for instance in session.query(Tank.name).distinct()]
+    unique_response = sorted(set(response))
+    session.close()
     # Return
-    return jsonify({"tankTypes": ["T-55", "Bar", "Baz"]})
-
+    return jsonify({ 'tankTypes': unique_response })
 
 @app.route("/countries")
 def return_countries():
