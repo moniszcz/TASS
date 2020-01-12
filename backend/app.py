@@ -7,6 +7,8 @@ from flask_cors import CORS
 
 from sqlalchemy.ext.declarative import declarative_base
 
+import networkx as nx
+
 Base = declarative_base()
 
 app = Flask(__name__.split(".")[0])
@@ -163,12 +165,63 @@ def tank_graph_get():
     """
     tank_name = request.args.get("tank_name")
     k_core = request.args.get("k_core")
-    alliance_only = request.args.get("alliance_only")
+    if (k_core):
+        k_core = int(k_core)
+    alliance_only = request.args.get("alliance_only") == 'true'
+
+    session = Session()
+    #Find countries possesing the same type of tanks
+    query = session.query(Country).join(Country.country).filter(Country.country.property.mapper.class_.name==tank_name)
+    ids_lst = [res.id for res in query]
+    edges = []
+    edges_graph = []
+    for i in range(len(ids_lst)):
+        for j in range(i+1, len(ids_lst)):
+            edges.append({"source": ids_lst[i],"target": ids_lst[j]})
+            edges_graph.append((ids_lst[i], ids_lst[j]))
+
+    if not alliance_only:
+        nodes = [{"id": instance.id, "name": instance.name} for instance in query]
+        nodes_graph = [(instance.id, instance.name) for instance in query]
+
+        links = edges
+
+    if alliance_only:
+        query_alliance = session.query(Alliance).all()
+        all_tanks = [{"source": instance.country1_id, "target": instance.country2_id} for instance in query_alliance]
+        all_tanks_graph = [(instance.country1_id, instance.country2_id) for instance in query_alliance]
+        
+        alliance_tanks = [d for d in edges if d in all_tanks]
+        alliance_tanks_graph = list(set(edges_graph).intersection(all_tanks_graph))
+
+        G = nx.Graph()
+        G.add_edges_from(alliance_tanks_graph)
+        G.to_undirected()
+        G1 = nx.k_core(G, k = k_core)
+        g = nx.to_dict_of_lists(G1)
+
+        links = []
+        for key, val in g.items(): 
+            for i in range(len(val)):
+                links.append({"source": key, "target": val[i]})
+                
+        nodes = []
+        for key in g.keys():
+            country_name = session.query(Country.name).filter_by(id=key).one()[0]
+            nodes.append({"id": key, "name":country_name}) 
+
+
+    session.close()
 
     print(
         f"tank_name: {tank_name}, k_core: {k_core}, alliance_only: {alliance_only}"
     )
-    return jsonify(dataset2)
+
+    response = {
+        "nodes": nodes,
+        "links": links
+    }
+    return jsonify(response)
 
 
 class Tank(Base):
