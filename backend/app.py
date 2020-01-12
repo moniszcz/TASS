@@ -23,11 +23,14 @@ def return_tanktypes():
     # Connect to the database.
     session = Session()
     # Query the tank types.
-    response = [instance.name for instance in session.query(Tank.name).distinct()]
+    response = [
+        instance.name for instance in session.query(Tank.name).distinct()
+    ]
     unique_response = sorted(set(response))
     session.close()
     # Return
-    return jsonify({ 'tankTypes': unique_response })
+    return jsonify({"tankTypes": unique_response})
+
 
 @app.route("/countries")
 def return_countries():
@@ -63,8 +66,16 @@ def chart1_get():
     session = Session()
 
     query = session.query(Tank).filter_by(name=tank_name)
-    country_names = [instance.country.name for instance in query if instance.quantity >= threshold]
-    quantity = [instance.quantity for instance in query if instance.quantity >= threshold]
+    country_names = [
+        instance.country.name
+        for instance in query
+        if instance.quantity >= threshold
+    ]
+    quantity = [
+        instance.quantity
+        for instance in query
+        if instance.quantity >= threshold
+    ]
 
     chart = {
         "labels": country_names,
@@ -82,7 +93,6 @@ def chart1_get():
     }
 
     session.close()
-
 
     return jsonify(chart)
 
@@ -275,37 +285,17 @@ class Alliance(Base):
 chart1 = {
     "labels": ["Poland", "Germany", "Russia"],
     "datasets": [
-        {
-            "label": "Number of tanks",
-            "backgroundColor": "rgba(255,99,132,0.2)",
-            "borderColor": "rgba(255,99,132,1)",
-            "borderWidth": 2,
-            "hoverBackgroundColor": "rgba(255,99,132,0.4)",
-            "hoverBorderColor": "rgba(255,99,132,1)",
-            "data": [65, 59, 80],
-        }
+        {"label": "Number of tanks", "borderWidth": 2, "data": [65, 59, 80],}
     ],
 }
 
 chart2 = {
     "labels": ["Poland", "Germany", "Russia"],
     "datasets": [
-        {
-            "label": "Number of tanks",
-            "backgroundColor": "rgba(255,99,132,0.2)",
-            "borderColor": "rgba(255,99,132,1)",
-            "borderWidth": 2,
-            "hoverBackgroundColor": "rgba(255,99,132,0.4)",
-            "hoverBorderColor": "rgba(255,99,132,1)",
-            "data": [65, 59, 80],
-        },
+        {"label": "Number of tanks", "borderWidth": 2, "data": [65, 59, 80],},
         {
             "label": "Number of exported tanks",
-            "backgroundColor": "rgba(155,99,132,0.2)",
-            "borderColor": "rgba(155,99,132,1)",
             "borderWidth": 2,
-            "hoverBackgroundColor": "rgba(155,99,132,0.4)",
-            "hoverBorderColor": "rgba(155,99,132,1)",
             "data": [20, 30, 40],
         },
     ],
@@ -314,24 +304,15 @@ chart2 = {
 chart3 = {
     "labels": ["Poland", "Germany", "Russia"],
     "datasets": [
-        {
-            "label": "T45",
-            "backgroundColor": "rgba(255,99,132,0.2)",
-            "borderColor": "rgba(255,99,132,1)",
-            "borderWidth": 2,
-            "hoverBackgroundColor": "rgba(255,99,132,0.4)",
-            "hoverBorderColor": "rgba(255,99,132,1)",
-            "data": [65, 59, 80],
-        },
-        {
-            "label": "T55",
-            "backgroundColor": "rgba(155,99,132,0.2)",
-            "borderColor": "rgba(155,99,132,1)",
-            "borderWidth": 2,
-            "hoverBackgroundColor": "rgba(155,99,132,0.4)",
-            "hoverBorderColor": "rgba(155,99,132,1)",
-            "data": [20, 0, 40],
-        },
+        {"label": "T45", "borderWidth": 2, "data": [65, 59, 80],},
+        {"label": "T55", "borderWidth": 2, "data": [20, 0, 40],},
+        {"label": "T65", "borderWidth": 2, "data": [20, 0, 40],},
+        {"label": "T75", "borderWidth": 2, "data": [20, 0, 40],},
+        {"label": "T85", "borderWidth": 2, "data": [20, 0, 40],},
+        {"label": "T95", "borderWidth": 2, "data": [20, 0, 40],},
+        {"label": "T15", "borderWidth": 2, "data": [20, 0, 40],},
+        {"label": "T25", "borderWidth": 2, "data": [20, 0, 40],},
+        {"label": "T35", "borderWidth": 2, "data": [20, 0, 40],},
     ],
 }
 

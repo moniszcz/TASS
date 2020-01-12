@@ -47,18 +47,18 @@ class App extends React.Component {
         <Container>
           <Row>
             <Col>
-              <Row>
+              <Row className="navigationbar">
                 <Col
-                  className={selectedOption === 'graph' ? 'selected' : null}
+                  className={selectedOption === 'graph' ? 'selected' : ''}
                   onClick={() => this.setSelectedOption('graph')}
                 >
-                  <p href="#">Graph</p>
+                  <span>Graph</span>
                 </Col>
                 <Col
-                  className={selectedOption !== 'graph' ? 'selected' : null}
+                  className={selectedOption !== 'graph' ? 'selected' : ''}
                   onClick={() => this.setSelectedOption('barChart')}
                 >
-                  <p href="#">Bar Chart</p>
+                  <span>Bar Chart</span>
                 </Col>
               </Row>
             </Col>
