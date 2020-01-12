@@ -224,11 +224,7 @@ chart1 = {
     "datasets": [
         {
             "label": "Number of tanks",
-            "backgroundColor": "rgba(255,99,132,0.2)",
-            "borderColor": "rgba(255,99,132,1)",
             "borderWidth": 2,
-            "hoverBackgroundColor": "rgba(255,99,132,0.4)",
-            "hoverBorderColor": "rgba(255,99,132,1)",
             "data": [65, 59, 80],
         }
     ],
@@ -239,20 +235,12 @@ chart2 = {
     "datasets": [
         {
             "label": "Number of tanks",
-            "backgroundColor": "rgba(255,99,132,0.2)",
-            "borderColor": "rgba(255,99,132,1)",
             "borderWidth": 2,
-            "hoverBackgroundColor": "rgba(255,99,132,0.4)",
-            "hoverBorderColor": "rgba(255,99,132,1)",
             "data": [65, 59, 80],
         },
         {
             "label": "Number of exported tanks",
-            "backgroundColor": "rgba(155,99,132,0.2)",
-            "borderColor": "rgba(155,99,132,1)",
             "borderWidth": 2,
-            "hoverBackgroundColor": "rgba(155,99,132,0.4)",
-            "hoverBorderColor": "rgba(155,99,132,1)",
             "data": [20, 30, 40],
         },
     ],
@@ -263,20 +251,12 @@ chart3 = {
     "datasets": [
         {
             "label": "T45",
-            "backgroundColor": "rgba(255,99,132,0.2)",
-            "borderColor": "rgba(255,99,132,1)",
             "borderWidth": 2,
-            "hoverBackgroundColor": "rgba(255,99,132,0.4)",
-            "hoverBorderColor": "rgba(255,99,132,1)",
             "data": [65, 59, 80],
         },
         {
             "label": "T55",
-            "backgroundColor": "rgba(155,99,132,0.2)",
-            "borderColor": "rgba(155,99,132,1)",
             "borderWidth": 2,
-            "hoverBackgroundColor": "rgba(155,99,132,0.4)",
-            "hoverBorderColor": "rgba(155,99,132,1)",
             "data": [20, 0, 40],
         },
     ],
