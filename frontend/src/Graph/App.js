@@ -19,7 +19,8 @@ class App extends React.Component {
       kCore: '',
       tankType: '',
       counter: 0,
-      selectedCountries: []
+      selectedCountries: [],
+      allianceOnly: false
     };
   }
 
@@ -77,6 +78,9 @@ class App extends React.Component {
 
   handleTankTypeChange(event) {
     this.setState({ tankType: event.target.value });
+  }
+  handleAllianceOnlyChange(event) {
+    this.setState({ allianceOnly: event.target.checked });
   }
 
   handleCountryChange(event) {
@@ -158,14 +162,6 @@ class App extends React.Component {
     const { tankTypes } = this.props;
     return (
       <>
-        <Form.Group controlId="k-core">
-          <Form.Label>K-core</Form.Label>
-          <Form.Control
-            type="text"
-            value={this.state.kCore}
-            onChange={event => this.handleKcoreChange(event)}
-          ></Form.Control>
-        </Form.Group>
         <Form.Group controlId="type">
           <Form.Label>Tank</Form.Label>
           <Form.Control
@@ -176,6 +172,21 @@ class App extends React.Component {
               <option>{element}</option>
             ))}
           </Form.Control>
+        </Form.Group>
+        <Form.Group controlId="k-core">
+          <Form.Label>K-core</Form.Label>
+          <Form.Control
+            type="text"
+            value={this.state.kCore}
+            onChange={event => this.handleKcoreChange(event)}
+          ></Form.Control>
+        </Form.Group>
+        <Form.Group controlId="formBasicCheckbox">
+          <Form.Check
+            type="checkbox"
+            label="Alliance only"
+            onChange={event => this.handleAllianceOnlyChange(event)}
+          />
         </Form.Group>
       </>
     );
