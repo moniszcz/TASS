@@ -46,7 +46,13 @@ class App extends React.Component {
 
   async handleButtonClick() {
     console.log('halo');
-    const { kCore, tankType, graphType, selectedCountries } = this.state;
+    const {
+      kCore,
+      tankType,
+      graphType,
+      selectedCountries,
+      allianceOnly
+    } = this.state;
     console.log(this.state);
 
     if (graphType === 'Sellers') {
@@ -57,7 +63,11 @@ class App extends React.Component {
       );
       this.setState({ dataset });
     } else {
-      const params = { k_core: kCore, tank_name: tankType };
+      const params = {
+        k_core: kCore,
+        tank_name: tankType,
+        alliance_only: allianceOnly
+      };
       const dataset = await downloadData(
         config.API_ENDPOINTS.TANKGRAPH,
         params
