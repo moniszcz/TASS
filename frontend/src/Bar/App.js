@@ -36,7 +36,7 @@ class App extends React.Component {
     };
   }
 
-  componentDidUpdate() {
+  componentDidMount() {
     if (!this.state.tankType) {
       this.setState({ tankType: this.props.tankTypes[0] });
     }
