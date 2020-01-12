@@ -202,7 +202,7 @@ class App extends React.Component {
           <Bar
             data={this.state.data}
             width={10}
-            height={10}
+            height={8}
             options={{
               maintainAspectRatio: true,
               scales: {
