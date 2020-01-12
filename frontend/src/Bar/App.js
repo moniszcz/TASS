@@ -28,7 +28,7 @@ class App extends React.Component {
       data: {},
       chartType: this.chartTypes[0],
       tankType: '',
-      threshold: '',
+      threshold: 0,
       selectedCountries: ''
     };
   }
