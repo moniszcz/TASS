@@ -2,6 +2,9 @@ import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart } from 'react-chartjs-2';
 
+import 'chartjs-plugin-colorschemes';
+import { Aspect6 } from 'chartjs-plugin-colorschemes/src/colorschemes/colorschemes.office';
+
 import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
@@ -60,6 +63,7 @@ class App extends React.Component {
     if (chartType === 'Chart1') {
       const params = { tank_name: tankType, threshold };
       const data = await downloadData(config.API_ENDPOINTS.CHART1, params);
+      console.log('aspect6', Aspect6);
       this.setState({ data });
     } else if (chartType === 'Chart2') {
       const params = { country_names: selectedCountries };
@@ -198,7 +202,7 @@ class App extends React.Component {
           <Bar
             data={this.state.data}
             width={10}
-            height={2}
+            height={10}
             options={{
               maintainAspectRatio: true,
               scales: {
@@ -212,6 +216,9 @@ class App extends React.Component {
                     stacked: true
                   }
                 ]
+              },
+              colorschemes: {
+                scheme: Aspect6
               }
             }}
           />
