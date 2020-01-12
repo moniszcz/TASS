@@ -4,6 +4,9 @@ from sqlalchemy.orm import sessionmaker
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
 
 app = Flask(__name__.split('.')[0])
 CORS(app)
@@ -13,11 +16,20 @@ Session = sessionmaker(bind=engine)
 
 @app.route("/tankTypes")
 def return_tanktypes():
+    # Connect to the database.
+
+    # Query the tank types.
+
+    # Return
     return jsonify({ 'tankTypes': ['Foo', 'Bar', 'Baz'] })
 
 @app.route("/countries")
 def return_countries():
-    return jsonify({ 'countries': ['Poland', 'Germany', 'Finland'] })
+    session = Session()
+    response = [ instance.name for instance in session.query(Country).all()]
+    session.close()
+    return jsonify({ 'countries': response })
+  
 
 
 @app.route("/chart1")
@@ -128,6 +140,57 @@ def tank_graph_get():
 
     print(f"tank_name: {tank_name}, k_core: {k_core}, alliance_only: {alliance_only}")
     return jsonify(dataset2)
+
+
+class Tank(Base):
+    __tablename__ = "tanks"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    quantity = db.Column(db.Integer)
+    country_id = db.Column(db.Integer, db.ForeignKey("countries.id"))
+    origin_id = db.Column(db.Integer, db.ForeignKey("countries.id"))
+
+    country = db.orm.relationship(
+        "Country", foreign_keys=[country_id], backref="country"
+    )
+    origin = db.orm.relationship(
+        "Country", foreign_keys=[origin_id], backref="origin"
+    )
+
+    def __repr__(self):
+        return f"<Tank(name={self.name}, quantity={self.quantity})>"
+
+
+class Country(Base):
+    __tablename__ = "countries"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, unique=True)
+
+    def __repr__(self):
+        return f"<Country(name={self.name})>"
+
+
+class Alliance(Base):
+    __tablename__ = "alliances"
+    id = db.Column(db.Integer, primary_key=True)
+    country1_id = db.Column(db.Integer, db.ForeignKey("countries.id"))
+    country2_id = db.Column(db.Integer, db.ForeignKey("countries.id"))
+    start_year = db.Column(db.Integer)
+    end_year = db.Column(db.Integer)
+
+    country1 = db.orm.relationship(
+        "Country", foreign_keys=[country1_id], backref="country1"
+    )
+    country2 = db.orm.relationship(
+        "Country", foreign_keys=[country2_id], backref="country2"
+    )
+
+    def __repr__(self):
+        return f"<Alliance(country1={self.country1_id}, country2={self.country2_id})>"
+
+
+
 
 chart1 =  {
   'labels': ['Poland', 'Germany', 'Russia'],
