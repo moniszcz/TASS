@@ -12,6 +12,7 @@ class Graph extends React.Component {
     this.width = 800 - this.margin.left - this.margin.right;
     this.height = 800 - this.margin.top - this.margin.bottom;
     this.previousDataset = null;
+    this.strength = -30;
   }
 
   componentDidUpdate() {
@@ -20,6 +21,12 @@ class Graph extends React.Component {
       this.props.dataset !== this.previousDataset
     ) {
       this.previousDataset = this.props.dataset;
+      console.log('LENGTH', this.props.dataset.links.length);
+      if (this.props.dataset.links.length > 500) {
+        this.strength = -400;
+      } else {
+        this.strength = -30;
+      }
       this.drawGraph();
     }
   }
@@ -49,7 +56,7 @@ class Graph extends React.Component {
           return d.id;
         })
       )
-      .force('charge', d3.forceManyBody())
+      .force('charge', d3.forceManyBody().strength(this.strength))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
     // Initialize the links

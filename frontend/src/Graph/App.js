@@ -1,4 +1,6 @@
 import React from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import GraphSVG from './GraphSVG';
 import config from '../config';
@@ -45,7 +47,6 @@ class App extends React.Component {
   }
 
   async handleButtonClick() {
-    console.log('halo');
     const {
       kCore,
       tankType,
@@ -55,23 +56,30 @@ class App extends React.Component {
     } = this.state;
     console.log(this.state);
 
+    let dataset;
+
     if (graphType === 'Sellers') {
       const params = { country_names: selectedCountries, k_core: kCore };
-      const dataset = await downloadData(
-        config.API_ENDPOINTS.SELLERSGRAPH,
-        params
-      );
-      this.setState({ dataset });
+      dataset = await downloadData(config.API_ENDPOINTS.SELLERSGRAPH, params);
     } else {
       const params = {
         k_core: kCore,
         tank_name: tankType,
         alliance_only: allianceOnly
       };
-      const dataset = await downloadData(
-        config.API_ENDPOINTS.TANKGRAPH,
-        params
-      );
+      dataset = await downloadData(config.API_ENDPOINTS.TANKGRAPH, params);
+    }
+
+    if (!dataset || dataset.nodes.length === 0) {
+      toast.info('No data for current query 😟!', {
+        position: 'top-right',
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+    } else {
       this.setState({ dataset });
     }
   }
@@ -108,28 +116,41 @@ class App extends React.Component {
   createView(formInputs) {
     const { graphTypes } = this;
     const view = (
-      <Row>
-        <Col xs={3}>
-          <Form>
-            <Form.Group controlId="type">
-              <Form.Label>Graph type</Form.Label>
-              <Form.Control
-                as="select"
-                onChange={event => this.handleGraphTypeChange(event)}
-              >
-                {graphTypes.map(element => (
-                  <option>{element}</option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-            {formInputs}
-            <Button onClick={() => this.handleButtonClick()}>Update</Button>
-          </Form>
-        </Col>
-        <Col>
-          <GraphSVG dataset={this.state.dataset}></GraphSVG>
-        </Col>
-      </Row>
+      <>
+        <Row>
+          <Col xs={3}>
+            <Form>
+              <Form.Group controlId="type">
+                <Form.Label>Graph type</Form.Label>
+                <Form.Control
+                  as="select"
+                  onChange={event => this.handleGraphTypeChange(event)}
+                >
+                  {graphTypes.map(element => (
+                    <option>{element}</option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+              {formInputs}
+              <Button onClick={() => this.handleButtonClick()}>Update</Button>
+            </Form>
+          </Col>
+          <Col>
+            <GraphSVG dataset={this.state.dataset}></GraphSVG>
+          </Col>
+        </Row>
+        <ToastContainer
+          position="top-right"
+          autoClose={2000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnVisibilityChange={false}
+          draggable
+          pauseOnHover
+        />
+      </>
     );
     return view;
   }
