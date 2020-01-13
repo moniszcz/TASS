@@ -1,15 +1,14 @@
 import React from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 import GraphSVG from './GraphSVG';
 import config from '../config';
-import downloadData from '../Api';
+import downloadData from '../utils/Api';
 
 import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
+import { getToastContainer, createNoDataToast } from '../utils/Toast';
 
 class App extends React.Component {
   constructor(props) {
@@ -71,14 +70,7 @@ class App extends React.Component {
     }
 
     if (!dataset || dataset.nodes.length === 0) {
-      toast.info('No data for current query 😟!', {
-        position: 'top-right',
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true
-      });
+      createNoDataToast();
     } else {
       this.setState({ dataset });
     }
@@ -115,6 +107,7 @@ class App extends React.Component {
    */
   createView(formInputs) {
     const { graphTypes } = this;
+    const toastContainer = getToastContainer();
     const view = (
       <>
         <Row>
@@ -139,17 +132,7 @@ class App extends React.Component {
             <GraphSVG dataset={this.state.dataset}></GraphSVG>
           </Col>
         </Row>
-        <ToastContainer
-          position="top-right"
-          autoClose={2000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnVisibilityChange={false}
-          draggable
-          pauseOnHover
-        />
+        {toastContainer}
       </>
     );
     return view;

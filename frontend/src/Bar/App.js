@@ -10,9 +10,10 @@ import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
 
-import downloadData from '../Api';
+import downloadData from '../utils/Api';
 
 import config from '../config';
+import { createNoDataToast, getToastContainer } from '../utils/Toast';
 
 class App extends React.Component {
   constructor(props) {
@@ -60,18 +61,20 @@ class App extends React.Component {
     const { threshold, tankType, chartType, selectedCountries } = this.state;
     console.log('state', this.state);
 
+    let data;
     if (chartType === 'Chart1') {
       const params = { tank_name: tankType, threshold };
-      const data = await downloadData(config.API_ENDPOINTS.CHART1, params);
-      console.log('aspect6', Aspect6);
-      this.setState({ data });
+      data = await downloadData(config.API_ENDPOINTS.CHART1, params);
     } else if (chartType === 'Chart2') {
       const params = { country_names: selectedCountries };
-      const data = await downloadData(config.API_ENDPOINTS.CHART2, params);
-      this.setState({ data });
+      data = await downloadData(config.API_ENDPOINTS.CHART2, params);
     } else {
       const params = { country_names: selectedCountries };
-      const data = await downloadData(config.API_ENDPOINTS.CHART3, params);
+      data = await downloadData(config.API_ENDPOINTS.CHART3, params);
+    }
+    if (!data) {
+      createNoDataToast();
+    } else {
       this.setState({ data });
     }
   }
@@ -178,52 +181,56 @@ class App extends React.Component {
    */
   createView(formInputs) {
     const { chartTypes } = this;
+    const toastContainer = getToastContainer();
     const view = (
-      <Row>
-        <Col xs={3}>
-          <Form>
-            <Form.Group controlId="type">
-              <Form.Label>Graph type</Form.Label>
-              <Form.Control
-                as="select"
-                onChange={event => this.handleChartTypeChange(event)}
-              >
-                {chartTypes.map(element => (
-                  <option>{element}</option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-            {formInputs}
-            <Button onClick={() => this.handleButtonClick()}>Update</Button>
-          </Form>
-        </Col>
-        <Col>
-          <h2>Number of tanks in countries</h2>
-          <Bar
-            data={this.state.data}
-            width={10}
-            height={8}
-            options={{
-              maintainAspectRatio: true,
-              scales: {
-                xAxes: [
-                  {
-                    stacked: true
-                  }
-                ],
-                yAxes: [
-                  {
-                    stacked: true
-                  }
-                ]
-              },
-              colorschemes: {
-                scheme: Aspect6
-              }
-            }}
-          />
-        </Col>
-      </Row>
+      <>
+        <Row>
+          <Col xs={3}>
+            <Form>
+              <Form.Group controlId="type">
+                <Form.Label>Graph type</Form.Label>
+                <Form.Control
+                  as="select"
+                  onChange={event => this.handleChartTypeChange(event)}
+                >
+                  {chartTypes.map(element => (
+                    <option>{element}</option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+              {formInputs}
+              <Button onClick={() => this.handleButtonClick()}>Update</Button>
+            </Form>
+          </Col>
+          <Col>
+            <h2>Number of tanks in countries</h2>
+            <Bar
+              data={this.state.data}
+              width={10}
+              height={8}
+              options={{
+                maintainAspectRatio: true,
+                scales: {
+                  xAxes: [
+                    {
+                      stacked: true
+                    }
+                  ],
+                  yAxes: [
+                    {
+                      stacked: true
+                    }
+                  ]
+                },
+                colorschemes: {
+                  scheme: Aspect6
+                }
+              }}
+            />
+          </Col>
+        </Row>
+        {toastContainer}
+      </>
     );
     return view;
   }
