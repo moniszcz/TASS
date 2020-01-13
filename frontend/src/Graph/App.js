@@ -58,7 +58,7 @@ class App extends React.Component {
     let dataset;
 
     if (graphType === 'Sellers') {
-      const params = { country_names: selectedCountries, k_core: kCore };
+      const params = { country_name: selectedCountries, k_core: kCore };
       dataset = await downloadData(config.API_ENDPOINTS.SELLERSGRAPH, params);
     } else {
       const params = {
