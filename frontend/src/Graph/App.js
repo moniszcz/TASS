@@ -20,14 +20,17 @@ class App extends React.Component {
       kCore: 0,
       tankType: '',
       counter: 0,
-      selectedCountries: [],
+      selectedCountry: '',
       allianceOnly: false
     };
   }
 
   componentDidUpdate() {
-    if (!this.state.tankType) {
+    if (!this.state.tankType && this.props.tankTypes) {
       this.setState({ tankType: this.props.tankTypes[0] });
+    }
+    if (!this.state.selectedCountry && this.props.countries) {
+      this.setState({ selectedCountry: this.props.countries[0] });
     }
   }
 
@@ -50,7 +53,7 @@ class App extends React.Component {
       kCore,
       tankType,
       graphType,
-      selectedCountries,
+      selectedCountry,
       allianceOnly
     } = this.state;
     console.log(this.state);
@@ -58,7 +61,11 @@ class App extends React.Component {
     let dataset;
 
     if (graphType === 'Sellers') {
-      const params = { country_name: selectedCountries, k_core: kCore };
+      const params = {
+        country_name: selectedCountry,
+        k_core: kCore,
+        alliance_only: allianceOnly
+      };
       dataset = await downloadData(config.API_ENDPOINTS.SELLERSGRAPH, params);
     } else {
       const params = {
@@ -68,6 +75,8 @@ class App extends React.Component {
       };
       dataset = await downloadData(config.API_ENDPOINTS.TANKGRAPH, params);
     }
+
+    console.log(dataset);
 
     if (!dataset || dataset.nodes.length === 0) {
       createNoDataToast();
@@ -94,11 +103,7 @@ class App extends React.Component {
   }
 
   handleCountryChange(event) {
-    const countries = [];
-    for (const el of event.target.selectedOptions) {
-      countries.push(el.value);
-    }
-    this.setState({ selectedCountries: countries });
+    this.setState({ selectedCountry: event.target.value });
   }
 
   /**
@@ -143,13 +148,13 @@ class App extends React.Component {
    */
   getSellersForm() {
     const { countries } = this.props;
-    return (
+    const { tankTypes } = this.props;
+    const formWithAllianceOnly = (
       <>
-        <Form.Group controlId="country">
+        <Form.Group controlId="type">
           <Form.Label>Country</Form.Label>
           <Form.Control
             as="select"
-            multiple
             onChange={event => this.handleCountryChange(event)}
           >
             {countries.map(element => (
@@ -165,8 +170,41 @@ class App extends React.Component {
             onChange={event => this.handleKcoreChange(event)}
           ></Form.Control>
         </Form.Group>
+        <Form.Group controlId="formBasicCheckbox">
+          <Form.Check
+            type="checkbox"
+            label="Alliance only"
+            checked={this.state.allianceOnly}
+            onChange={event => this.handleAllianceOnlyChange(event)}
+          />
+        </Form.Group>
       </>
     );
+    const formWithoutAllianceOnly = (
+      <>
+        <Form.Group controlId="type">
+          <Form.Label>Country</Form.Label>
+          <Form.Control
+            as="select"
+            onChange={event => this.handleCountryChange(event)}
+          >
+            {countries.map(element => (
+              <option>{element}</option>
+            ))}
+          </Form.Control>
+        </Form.Group>
+        <Form.Group controlId="formBasicCheckbox">
+          <Form.Check
+            type="checkbox"
+            label="Alliance only"
+            checked={this.state.allianceOnly}
+            onChange={event => this.handleAllianceOnlyChange(event)}
+          />
+        </Form.Group>
+      </>
+    );
+    if (this.state.allianceOnly) return formWithAllianceOnly;
+    else return formWithoutAllianceOnly;
   }
 
   /**
