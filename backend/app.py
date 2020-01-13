@@ -147,13 +147,14 @@ def sellers_graph_get():
 
     :rtype: Graph
     """
-    print(request.args)
-    country_names = request.args.getlist("country_names[]")
+    country_name = request.args.getlist("country_name")
     k_core = request.args.get("k_core")
-    alliance_only = request.args.get("alliance_only")
+    if (k_core):
+        k_core = int(k_core)
+    alliance_only = request.args.get("alliance_only") == 'true'
 
     print(
-        f"country_names: {country_names}, k_core: {k_core}, alliance_only: {alliance_only}"
+        f"country_name: {country_name}, k_core: {k_core}, alliance_only: {alliance_only}"
     )
     return jsonify(dataset1)
 
