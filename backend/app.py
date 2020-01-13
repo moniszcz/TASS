@@ -80,15 +80,7 @@ def chart1_get():
     chart = {
         "labels": country_names,
         "datasets": [
-            {
-                "label": "Number of tanks",
-                # "backgroundColor": "rgba(255,99,132,0.2)",
-                # "borderColor": "rgba(255,99,132,1)",
-                "borderWidth": 2,
-                # "hoverBackgroundColor": "rgba(255,99,132,0.4)",
-                # "hoverBorderColor": "rgba(255,99,132,1)",
-                "data": quantity,
-            }
+            {"label": "Number of tanks", "borderWidth": 2, "data": quantity,}
         ],
     }
 
@@ -129,7 +121,67 @@ def chart3_get():
     """
     country_names = request.args.getlist("country_names[]")
 
-    return jsonify(chart3)
+    chart3 = {
+        "labels": ["Poland", "Germany", "Russia"],
+        "datasets": [
+            {"label": "T45", "borderWidth": 2, "data": [65, 59, 80],},
+            {"label": "T55", "borderWidth": 2, "data": [20, 0, 40],},
+            {"label": "T65", "borderWidth": 2, "data": [20, 0, 40],},
+            {"label": "T75", "borderWidth": 2, "data": [20, 0, 40],},
+            {"label": "T85", "borderWidth": 2, "data": [20, 0, 40],},
+            {"label": "T95", "borderWidth": 2, "data": [20, 0, 40],},
+            {"label": "T15", "borderWidth": 2, "data": [20, 0, 40],},
+            {"label": "T25", "borderWidth": 2, "data": [20, 0, 40],},
+            {"label": "T35", "borderWidth": 2, "data": [20, 0, 40],},
+        ],
+    }
+
+    session = Session()
+
+    country_tanks = {}
+
+    tank_names = set()
+
+    output = {}
+
+    for country_name in country_names:
+        country_tanks[country_name] = {}
+
+    for country_name in country_names:
+        country = session.query(Country).filter_by(name=country_name).one()
+        for tank in country.country:
+            tank_names.add(tank.name)
+            country_tanks[country_name][tank.name] = tank.quantity
+
+    # print(country_tanks)
+    # print(tank_names)
+
+    for tank_name in tank_names:
+        output[tank_name] = []
+
+    for country, tanks in country_tanks.items():
+        for tank_name in tank_names:
+            if tank_name in tanks:
+                output[tank_name].append(tanks[tank_name])
+            else:
+                output[tank_name].append(0)
+
+    # print(output)
+
+    labels = country_names
+    datasets = []
+
+    for key, value in output.items():
+        row = {"label": key, "borderWidth": 2, "data": value}
+        datasets.append(row)
+
+    chart = {"labels": labels, "datasets": datasets}
+
+    # print(chart)
+
+    session.close()
+
+    return jsonify(chart)
 
 
 @app.route("/sellersGraph")
@@ -149,9 +201,9 @@ def sellers_graph_get():
     """
     country_name = request.args.getlist("country_name")
     k_core = request.args.get("k_core")
-    if (k_core):
+    if k_core:
         k_core = int(k_core)
-    alliance_only = request.args.get("alliance_only") == 'true'
+    alliance_only = request.args.get("alliance_only") == "true"
 
     print(
         f"country_name: {country_name}, k_core: {k_core}, alliance_only: {alliance_only}"
@@ -176,51 +228,66 @@ def tank_graph_get():
     """
     tank_name = request.args.get("tank_name")
     k_core = request.args.get("k_core")
-    if (k_core):
+    if k_core:
         k_core = int(k_core)
-    alliance_only = request.args.get("alliance_only") == 'true'
+    alliance_only = request.args.get("alliance_only") == "true"
 
     session = Session()
-    #Find countries possesing the same type of tanks
-    query = session.query(Country).join(Country.country).filter(Country.country.property.mapper.class_.name==tank_name)
+    # Find countries possesing the same type of tanks
+    query = (
+        session.query(Country)
+        .join(Country.country)
+        .filter(Country.country.property.mapper.class_.name == tank_name)
+    )
     ids_lst = [res.id for res in query]
     edges = []
     edges_graph = []
     for i in range(len(ids_lst)):
-        for j in range(i+1, len(ids_lst)):
-            edges.append({"source": ids_lst[i],"target": ids_lst[j]})
+        for j in range(i + 1, len(ids_lst)):
+            edges.append({"source": ids_lst[i], "target": ids_lst[j]})
             edges_graph.append((ids_lst[i], ids_lst[j]))
 
     if not alliance_only:
-        nodes = [{"id": instance.id, "name": instance.name} for instance in query]
+        nodes = [
+            {"id": instance.id, "name": instance.name} for instance in query
+        ]
         nodes_graph = [(instance.id, instance.name) for instance in query]
 
         links = edges
 
     if alliance_only:
         query_alliance = session.query(Alliance).all()
-        all_tanks = [{"source": instance.country1_id, "target": instance.country2_id} for instance in query_alliance]
-        all_tanks_graph = [(instance.country1_id, instance.country2_id) for instance in query_alliance]
-        
+        all_tanks = [
+            {"source": instance.country1_id, "target": instance.country2_id}
+            for instance in query_alliance
+        ]
+        all_tanks_graph = [
+            (instance.country1_id, instance.country2_id)
+            for instance in query_alliance
+        ]
+
         alliance_tanks = [d for d in edges if d in all_tanks]
-        alliance_tanks_graph = list(set(edges_graph).intersection(all_tanks_graph))
+        alliance_tanks_graph = list(
+            set(edges_graph).intersection(all_tanks_graph)
+        )
 
         G = nx.Graph()
         G.add_edges_from(alliance_tanks_graph)
         G.to_undirected()
-        G1 = nx.k_core(G, k = k_core)
+        G1 = nx.k_core(G, k=k_core)
         g = nx.to_dict_of_lists(G1)
 
         links = []
-        for key, val in g.items(): 
+        for key, val in g.items():
             for i in range(len(val)):
                 links.append({"source": key, "target": val[i]})
-                
+
         nodes = []
         for key in g.keys():
-            country_name = session.query(Country.name).filter_by(id=key).one()[0]
-            nodes.append({"id": key, "name":country_name}) 
-
+            country_name = (
+                session.query(Country.name).filter_by(id=key).one()[0]
+            )
+            nodes.append({"id": key, "name": country_name})
 
     session.close()
 
@@ -228,10 +295,7 @@ def tank_graph_get():
         f"tank_name: {tank_name}, k_core: {k_core}, alliance_only: {alliance_only}"
     )
 
-    response = {
-        "nodes": nodes,
-        "links": links
-    }
+    response = {"nodes": nodes, "links": links}
     return jsonify(response)
 
 
