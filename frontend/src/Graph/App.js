@@ -16,7 +16,7 @@ class App extends React.Component {
     this.state = {
       dataset: null,
       graphType: this.graphTypes[0],
-      kCore: '',
+      kCore: 0,
       tankType: '',
       counter: 0,
       selectedCountries: [],
@@ -170,7 +170,7 @@ class App extends React.Component {
    */
   getTankForm() {
     const { tankTypes } = this.props;
-    return (
+    const formWithAllianceOnly = (
       <>
         <Form.Group controlId="type">
           <Form.Label>Tank</Form.Label>
@@ -195,11 +195,38 @@ class App extends React.Component {
           <Form.Check
             type="checkbox"
             label="Alliance only"
+            checked={this.state.allianceOnly}
             onChange={event => this.handleAllianceOnlyChange(event)}
           />
         </Form.Group>
       </>
     );
+    const formWithoutAllianceOnly = (
+      <>
+        <Form.Group controlId="type">
+          <Form.Label>Tank</Form.Label>
+          <Form.Control
+            as="select"
+            onChange={event => this.handleTankTypeChange(event)}
+          >
+            {tankTypes.map(element => (
+              <option>{element}</option>
+            ))}
+          </Form.Control>
+        </Form.Group>
+        <Form.Group controlId="formBasicCheckbox">
+          <Form.Check
+            type="checkbox"
+            label="Alliance only"
+            checked={this.state.allianceOnly}
+            onChange={event => this.handleAllianceOnlyChange(event)}
+          />
+        </Form.Group>
+      </>
+    );
+
+    if (this.state.allianceOnly) return formWithAllianceOnly;
+    else return formWithoutAllianceOnly;
   }
 }
 
