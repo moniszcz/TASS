@@ -9,6 +9,8 @@ from sqlalchemy.ext.declarative import declarative_base
 
 import networkx as nx
 
+from functools import reduce
+
 Base = declarative_base()
 
 app = Flask(__name__.split(".")[0])
@@ -94,7 +96,8 @@ def chart2_get():
     """?????? Wykres wielkości produkcji ??????
     TODO: Make country names a list.
 
-    Kolejnym interesującym scenariuszem użycia aplikacji byłby wykres prezentujący ilości wyprodukowanych czołgów oraz ich eksport przez kraje wybrane przez użytkownika
+    Kolejnym interesującym scenariuszem użycia aplikacji byłby wykres prezentujący ilości wyprodukowanych czołgów oraz ich eksport 
+    przez kraje wybrane przez użytkownika
 
     :param country_names:
     :type country_names: List[str]
@@ -104,7 +107,60 @@ def chart2_get():
     country_names = request.args.getlist("country_names[]")
     print(f"country_names: {country_names}")
 
-    return jsonify(chart2)
+    session = Session()
+
+    # list of countries ids
+    country_ids = []
+    # aggregative quantity of owned tanks (country_name[0] has quantity[0] tanks etc.)
+    quantity = []
+    # aggregative quantity of possessed tanks (country_name[0] has produced export_quantity[0] tanks etc.)
+    export_quantity = []
+
+    for country_name in country_names:
+        country_id = session.query(Country.id).filter_by(name = country_name).one()[0]
+        country_ids.append(country_id)
+
+    # tanks owned
+    for c_id in country_ids:
+        # owned tanks by type for country_id equal c_id
+        tmp = []
+        # list of tuples, where first element is a quantity of tanks per type
+        quants = session.query(Tank.quantity).filter_by(country_id = c_id).all()
+        for quant in quants:
+            tmp.append(quant[0])
+        # list for reduce function can't be empty
+        if not tmp:
+            tmp.append(0)
+        quantity.append(reduce(lambda a, b: a+b, tmp))
+    # print(quantity)
+
+    # tanks exported
+    for c_id in country_ids:
+        # exported tanks by type for country_id equal c_id
+        tmp = []
+        exps = session.query(Tank.quantity).filter_by(origin_id = c_id).all()
+        for exp in exps:
+            tmp.append(exp[0])
+        if not tmp:
+            tmp.append(0)
+        export_quantity.append(reduce(lambda a, b: a+b, tmp))
+    # print(export_quantity)
+
+    session.close()
+
+    chart = {
+    "labels": country_names,
+    "datasets": [
+        {"label": "Number of tanks", "borderWidth": 2, "data": quantity, },
+        {
+            "label": "Number of exported tanks",
+            "borderWidth": 2,
+            "data": export_quantity,
+        },
+    ],
+    }
+
+    return jsonify(chart)
 
 
 @app.route("/chart3")
@@ -112,7 +168,8 @@ def chart3_get():
     """?????? Wykres posiadanych czołgów ??????
     TODO: Make country names a list.
 
-    Użytkownik będzie miał możliwość wyboru z dropdownu kilku krajów dla których chce przeprowadzić porównanie, a następnie wykreślić na wykresie informacje o ilości i typach posiadanych czołgów
+    Użytkownik będzie miał możliwość wyboru z dropdownu kilku krajów dla których chce przeprowadzić porównanie, 
+    a następnie wykreślić na wykresie informacje o ilości i typach posiadanych czołgów
 
     :param country_name:
     :type country_name: List[str]
