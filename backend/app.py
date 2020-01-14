@@ -82,7 +82,7 @@ def chart1_get():
     chart = {
         "labels": country_names,
         "datasets": [
-            {"label": "Number of tanks", "borderWidth": 2, "data": quantity,}
+            {"label": "Number of tanks", "borderWidth": 2, "data": quantity}
         ],
     }
 
@@ -117,7 +117,9 @@ def chart2_get():
     export_quantity = []
 
     for country_name in country_names:
-        country_id = session.query(Country.id).filter_by(name = country_name).one()[0]
+        country_id = (
+            session.query(Country.id).filter_by(name=country_name).one()[0]
+        )
         country_ids.append(country_id)
 
     # tanks owned
@@ -125,39 +127,39 @@ def chart2_get():
         # owned tanks by type for country_id equal c_id
         tmp = []
         # list of tuples, where first element is a quantity of tanks per type
-        quants = session.query(Tank.quantity).filter_by(country_id = c_id).all()
+        quants = session.query(Tank.quantity).filter_by(country_id=c_id).all()
         for quant in quants:
             tmp.append(quant[0])
         # list for reduce function can't be empty
         if not tmp:
             tmp.append(0)
-        quantity.append(reduce(lambda a, b: a+b, tmp))
+        quantity.append(reduce(lambda a, b: a + b, tmp))
     # print(quantity)
 
     # tanks exported
     for c_id in country_ids:
         # exported tanks by type for country_id equal c_id
         tmp = []
-        exps = session.query(Tank.quantity).filter_by(origin_id = c_id).all()
+        exps = session.query(Tank.quantity).filter_by(origin_id=c_id).all()
         for exp in exps:
             tmp.append(exp[0])
         if not tmp:
             tmp.append(0)
-        export_quantity.append(reduce(lambda a, b: a+b, tmp))
+        export_quantity.append(reduce(lambda a, b: a + b, tmp))
     # print(export_quantity)
 
     session.close()
 
     chart = {
-    "labels": country_names,
-    "datasets": [
-        {"label": "Number of tanks", "borderWidth": 2, "data": quantity, },
-        {
-            "label": "Number of exported tanks",
-            "borderWidth": 2,
-            "data": export_quantity,
-        },
-    ],
+        "labels": country_names,
+        "datasets": [
+            {"label": "Number of tanks", "borderWidth": 2, "data": quantity},
+            {
+                "label": "Number of exported tanks",
+                "borderWidth": 2,
+                "data": export_quantity,
+            },
+        ],
     }
 
     return jsonify(chart)
@@ -450,181 +452,3 @@ class Alliance(Base):
 
     def __repr__(self):
         return f"<Alliance(country1={self.country1_id}, country2={self.country2_id})>"
-
-
-chart1 = {
-    "labels": ["Poland", "Germany", "Russia"],
-    "datasets": [
-        {"label": "Number of tanks", "borderWidth": 2, "data": [65, 59, 80],}
-    ],
-}
-
-chart2 = {
-    "labels": ["Poland", "Germany", "Russia"],
-    "datasets": [
-        {"label": "Number of tanks", "borderWidth": 2, "data": [65, 59, 80],},
-        {
-            "label": "Number of exported tanks",
-            "borderWidth": 2,
-            "data": [20, 30, 40],
-        },
-    ],
-}
-
-chart3 = {
-    "labels": ["Poland", "Germany", "Russia"],
-    "datasets": [
-        {"label": "T45", "borderWidth": 2, "data": [65, 59, 80],},
-        {"label": "T55", "borderWidth": 2, "data": [20, 0, 40],},
-        {"label": "T65", "borderWidth": 2, "data": [20, 0, 40],},
-        {"label": "T75", "borderWidth": 2, "data": [20, 0, 40],},
-        {"label": "T85", "borderWidth": 2, "data": [20, 0, 40],},
-        {"label": "T95", "borderWidth": 2, "data": [20, 0, 40],},
-        {"label": "T15", "borderWidth": 2, "data": [20, 0, 40],},
-        {"label": "T25", "borderWidth": 2, "data": [20, 0, 40],},
-        {"label": "T35", "borderWidth": 2, "data": [20, 0, 40],},
-    ],
-}
-
-dataset1 = {
-    "nodes": [
-        {"id": 1, "name": "A"},
-        {"id": 2, "name": "B"},
-        {"id": 3, "name": "C"},
-        {"id": 4, "name": "D"},
-        {"id": 5, "name": "E"},
-        {"id": 6, "name": "F"},
-        {"id": 7, "name": "G"},
-        {"id": 8, "name": "H"},
-        {"id": 9, "name": "I"},
-        {"id": 10, "name": "J"},
-    ],
-    "links": [
-        {"source": 1, "target": 2},
-        {"source": 1, "target": 5},
-        {"source": 1, "target": 6},
-        {"source": 2, "target": 3},
-        {"source": 2, "target": 7},
-        {"source": 3, "target": 4},
-        {"source": 8, "target": 3},
-        {"source": 4, "target": 5},
-        {"source": 4, "target": 9},
-        {"source": 5, "target": 10},
-    ],
-}
-
-dataset2 = {
-    "nodes": [
-        {"id": "Myriel", "name": "Myriel", "group": 1},
-        {"id": "Napoleon", "name": "Napoleon", "group": 1},
-        {"id": "Mlle.Baptistine", "name": "Mlle.Baptistine", "group": 1},
-        {"id": "Mme.Magloire", "name": "Mme.Magloire", "group": 1},
-        {"id": "CountessdeLo", "name": "CountessdeLo", "group": 1},
-        {"id": "Geborand", "name": "Geborand", "group": 1},
-        {"id": "Champtercier", "name": "Champtercier", "group": 1},
-        {"id": "Cravatte", "name": "Cravatte", "group": 1},
-        {"id": "Count", "name": "Count", "group": 1},
-        {"id": "OldMan", "name": "OldMan", "group": 1},
-        {"id": "Labarre", "name": "Labarre", "group": 2},
-        {"id": "Valjean", "name": "Valjean", "group": 2},
-        {"id": "Marguerite", "name": "Marguerite", "group": 3},
-        {"id": "Mme.deR", "name": "Mme.deR", "group": 2},
-        {"id": "Isabeau", "name": "Isabeau", "group": 2},
-        {"id": "Gervais", "name": "Gervais", "group": 2},
-        {"id": "Tholomyes", "name": "Tholomyes", "group": 3},
-        {"id": "Listolier", "name": "Listolier", "group": 3},
-        {"id": "Fameuil", "name": "Fameuil", "group": 3},
-        {"id": "Blacheville", "name": "Blacheville", "group": 3},
-        {"id": "Favourite", "name": "Favourite", "group": 3},
-        {"id": "Dahlia", "name": "Dahlia", "group": 3},
-        {"id": "Zephine", "name": "Zephine", "group": 3},
-        {"id": "Fantine", "name": "Fantine", "group": 3},
-        {"id": "Mme.Thenardier", "name": "Mme.Thenardier", "group": 4},
-        {"id": "Thenardier", "name": "Thenardier", "group": 4},
-        {"id": "Cosette", "name": "Cosette", "group": 5},
-        {"id": "Javert", "name": "Javert", "group": 4},
-        {"id": "Fauchelevent", "name": "Fauchelevent", "group": 0},
-        {"id": "Bamatabois", "name": "Bamatabois", "group": 2},
-        {"id": "Perpetue", "name": "Perpetue", "group": 3},
-        {"id": "Simplice", "name": "Simplice", "group": 2},
-        {"id": "Scaufflaire", "name": "Scaufflaire", "group": 2},
-        {"id": "Woman1", "name": "Woman1", "group": 2},
-        {"id": "Judge", "name": "Judge", "group": 2},
-        {"id": "Champmathieu", "name": "Champmathieu", "group": 2},
-        {"id": "Brevet", "name": "Brevet", "group": 2},
-        {"id": "Chenildieu", "name": "Chenildieu", "group": 2},
-        {"id": "Cochepaille", "name": "Cochepaille", "group": 2},
-        {"id": "Pontmercy", "name": "Pontmercy", "group": 4},
-        {"id": "Boulatruelle", "name": "Boulatruelle", "group": 6},
-        {"id": "Eponine", "name": "Eponine", "group": 4},
-        {"id": "Anzelma", "name": "Anzelma", "group": 4},
-        {"id": "Woman2", "name": "Woman2", "group": 5},
-        {"id": "MotherInnocent", "name": "MotherInnocent", "group": 0},
-        {"id": "Gribier", "name": "Gribier", "group": 0},
-        {"id": "Jondrette", "name": "Jondrette", "group": 7},
-        {"id": "Mme.Burgon", "name": "Mme.Burgon", "group": 7},
-        {"id": "Gavroche", "name": "Gavroche", "group": 8},
-        {"id": "Gillenormand", "name": "Gillenormand", "group": 5},
-        {"id": "Magnon", "name": "Magnon", "group": 5},
-        {"id": "Mlle.Gillenormand", "name": "Mlle.Gillenormand", "group": 5},
-        {"id": "Mme.Pontmercy", "name": "Mme.Pontmercy", "group": 5},
-        {"id": "Mlle.Vaubois", "name": "Mlle.Vaubois", "group": 5},
-        {"id": "Lt.Gillenormand", "name": "Lt.Gillenormand", "group": 5},
-        {"id": "Marius", "name": "Marius", "group": 8},
-        {"id": "BaronessT", "name": "BaronessT", "group": 5},
-        {"id": "Mabeuf", "name": "Mabeuf", "group": 8},
-        {"id": "Enjolras", "name": "Enjolras", "group": 8},
-        {"id": "Combeferre", "name": "Combeferre", "group": 8},
-        {"id": "Prouvaire", "name": "Prouvaire", "group": 8},
-        {"id": "Feuilly", "name": "Feuilly", "group": 8},
-        {"id": "Courfeyrac", "name": "Courfeyrac", "group": 8},
-        {"id": "Bahorel", "name": "Bahorel", "group": 8},
-        {"id": "Bossuet", "name": "Bossuet", "group": 8},
-        {"id": "Joly", "name": "Joly", "group": 8},
-        {"id": "Grantaire", "name": "Grantaire", "group": 8},
-        {"id": "MotherPlutarch", "name": "MotherPlutarch", "group": 9},
-        {"id": "Gueulemer", "name": "Gueulemer", "group": 4},
-        {"id": "Babet", "name": "Babet", "group": 4},
-        {"id": "Claquesous", "name": "Claquesous", "group": 4},
-        {"id": "Montparnasse", "name": "Montparnasse", "group": 4},
-        {"id": "Toussaint", "name": "Toussaint", "group": 5},
-        {"id": "Child1", "name": "Child1", "group": 10},
-        {"id": "Child2", "name": "Child2", "group": 10},
-        {"id": "Brujon", "name": "Brujon", "group": 4},
-        {"id": "Mme.Hucheloup", "name": "Mme.Hucheloup", "group": 8},
-    ],
-    "links": [
-        {"source": "Claquesous", "target": "Mme.Thenardier", "value": 1},
-        {"source": "Claquesous", "target": "Javert", "value": 1},
-        {"source": "Claquesous", "target": "Eponine", "value": 1},
-        {"source": "Claquesous", "target": "Enjolras", "value": 1},
-        {"source": "Montparnasse", "target": "Javert", "value": 1},
-        {"source": "Montparnasse", "target": "Babet", "value": 2},
-        {"source": "Montparnasse", "target": "Gueulemer", "value": 2},
-        {"source": "Montparnasse", "target": "Claquesous", "value": 2},
-        {"source": "Montparnasse", "target": "Valjean", "value": 1},
-        {"source": "Montparnasse", "target": "Gavroche", "value": 1},
-        {"source": "Montparnasse", "target": "Eponine", "value": 1},
-        {"source": "Montparnasse", "target": "Thenardier", "value": 1},
-        {"source": "Toussaint", "target": "Cosette", "value": 2},
-        {"source": "Toussaint", "target": "Javert", "value": 1},
-        {"source": "Toussaint", "target": "Valjean", "value": 1},
-        {"source": "Child1", "target": "Gavroche", "value": 2},
-        {"source": "Child2", "target": "Gavroche", "value": 2},
-        {"source": "Child2", "target": "Child1", "value": 3},
-        {"source": "Brujon", "target": "Babet", "value": 3},
-        {"source": "Brujon", "target": "Gueulemer", "value": 3},
-        {"source": "Brujon", "target": "Thenardier", "value": 3},
-        {"source": "Brujon", "target": "Gavroche", "value": 1},
-        {"source": "Brujon", "target": "Eponine", "value": 1},
-        {"source": "Brujon", "target": "Claquesous", "value": 1},
-        {"source": "Brujon", "target": "Montparnasse", "value": 1},
-        {"source": "Mme.Hucheloup", "target": "Bossuet", "value": 1},
-        {"source": "Mme.Hucheloup", "target": "Joly", "value": 1},
-        {"source": "Mme.Hucheloup", "target": "Grantaire", "value": 1},
-        {"source": "Mme.Hucheloup", "target": "Bahorel", "value": 1},
-        {"source": "Mme.Hucheloup", "target": "Courfeyrac", "value": 1},
-        {"source": "Mme.Hucheloup", "target": "Gavroche", "value": 1},
-        {"source": "Mme.Hucheloup", "target": "Enjolras", "value": 1},
-    ],
-}
