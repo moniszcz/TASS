@@ -9,6 +9,7 @@ import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
+import Select from 'react-select';
 
 import downloadData from '../utils/Api';
 
@@ -93,13 +94,20 @@ class App extends React.Component {
       this.setState({ threshold: event.target.value });
   }
 
-  handleCountryChange(event) {
-    const countries = [];
-    for (const el of event.target.selectedOptions) {
-      countries.push(el.value);
+  handleCountryChange = selectedOptions => {
+    if (selectedOptions) {
+      const countries = [];
+      for (const el of selectedOptions) {
+        countries.push(el.value);
+      }
+      this.setState({ selectedCountries: countries });
     }
-    this.setState({ selectedCountries: countries });
-  }
+  };
+
+  handleSubmit = e => {
+    e.preventDefault();
+    console.log(e);
+  };
 
   /**
    * Creates a form for Sellers Graph Type.
@@ -139,15 +147,13 @@ class App extends React.Component {
       <>
         <Form.Group controlId="country">
           <Form.Label>Country</Form.Label>
-          <Form.Control
-            as="select"
-            multiple
-            onChange={event => this.handleCountryChange(event)}
-          >
-            {countries.map(element => (
-              <option>{element}</option>
-            ))}
-          </Form.Control>
+          <Select
+            options={countries.map(element => {
+              return { value: element, label: element };
+            })}
+            isMulti
+            onChange={this.handleCountryChange}
+          />
         </Form.Group>
       </>
     );
@@ -161,15 +167,13 @@ class App extends React.Component {
       <>
         <Form.Group controlId="country">
           <Form.Label>Country</Form.Label>
-          <Form.Control
-            as="select"
-            multiple
-            onChange={event => this.handleCountryChange(event)}
-          >
-            {countries.map(element => (
-              <option>{element}</option>
-            ))}
-          </Form.Control>
+          <Select
+            options={countries.map(element => {
+              return { value: element, label: element };
+            })}
+            isMulti
+            onChange={this.handleCountryChange}
+          />
         </Form.Group>
       </>
     );
@@ -186,7 +190,7 @@ class App extends React.Component {
       <>
         <Row>
           <Col xs={3}>
-            <Form>
+            <Form onSubmit={event => this.handleSubmit(event)}>
               <Form.Group controlId="type">
                 <Form.Label>Graph type</Form.Label>
                 <Form.Control
