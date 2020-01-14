@@ -27,7 +27,7 @@ class App extends React.Component {
       }
     });
 
-    this.chartTypes = ['Chart1', 'Chart2', 'Chart3'];
+    this.chartTypes = ['Owned Tanks', 'Owned/Exported Tanks', 'Types of Tanks'];
 
     this.state = {
       data: {},
@@ -47,9 +47,9 @@ class App extends React.Component {
   render() {
     const { chartType } = this.state;
     let form;
-    if (chartType === 'Chart1') {
+    if (chartType === this.chartTypes[0]) {
       form = this.getChart1Form();
-    } else if (chartType === 'Chart2') {
+    } else if (chartType === this.chartTypes[1]) {
       form = this.getChart2Form();
     } else {
       form = this.getChart3Form();
@@ -63,10 +63,10 @@ class App extends React.Component {
     console.log('state', this.state);
 
     let data;
-    if (chartType === 'Chart1') {
+    if (chartType === this.chartTypes[0]) {
       const params = { tank_name: tankType, threshold };
       data = await downloadData(config.API_ENDPOINTS.CHART1, params);
-    } else if (chartType === 'Chart2') {
+    } else if (chartType === this.chartTypes[1]) {
       const params = { country_names: selectedCountries };
       data = await downloadData(config.API_ENDPOINTS.CHART2, params);
     } else {
@@ -207,7 +207,6 @@ class App extends React.Component {
             </Form>
           </Col>
           <Col>
-            <h2>Number of tanks in countries</h2>
             <Bar
               data={this.state.data}
               width={10}

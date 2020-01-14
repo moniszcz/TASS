@@ -212,6 +212,12 @@ class App extends React.Component {
             type="text"
             value={this.state.kCore}
             onChange={event => this.handleKcoreChange(event)}
+            onKeyPress={event => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                this.handleButtonClick();
+              }
+            }}
           ></Form.Control>
         </Form.Group>
         <Form.Group controlId="formBasicCheckbox">
