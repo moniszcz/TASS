@@ -162,22 +162,6 @@ class App extends React.Component {
             ))}
           </Form.Control>
         </Form.Group>
-        <Form.Group controlId="k-core">
-          <Form.Label>K-core</Form.Label>
-          <Form.Control
-            type="text"
-            value={this.state.kCore}
-            onChange={event => this.handleKcoreChange(event)}
-          ></Form.Control>
-        </Form.Group>
-        <Form.Group controlId="formBasicCheckbox">
-          <Form.Check
-            type="checkbox"
-            label="Alliance only"
-            checked={this.state.allianceOnly}
-            onChange={event => this.handleAllianceOnlyChange(event)}
-          />
-        </Form.Group>
       </>
     );
     const formWithoutAllianceOnly = (
@@ -192,14 +176,6 @@ class App extends React.Component {
               <option>{element}</option>
             ))}
           </Form.Control>
-        </Form.Group>
-        <Form.Group controlId="formBasicCheckbox">
-          <Form.Check
-            type="checkbox"
-            label="Alliance only"
-            checked={this.state.allianceOnly}
-            onChange={event => this.handleAllianceOnlyChange(event)}
-          />
         </Form.Group>
       </>
     );
