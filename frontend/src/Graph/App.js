@@ -62,9 +62,7 @@ class App extends React.Component {
 
     if (graphType === 'Sellers') {
       const params = {
-        country_name: selectedCountry,
-        k_core: kCore,
-        alliance_only: allianceOnly
+        country_name: selectedCountry
       };
       dataset = await downloadData(config.API_ENDPOINTS.SELLERSGRAPH, params);
     } else {
