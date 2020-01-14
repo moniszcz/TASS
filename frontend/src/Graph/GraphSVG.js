@@ -88,7 +88,10 @@ class Graph extends React.Component {
     const circles = node
       .append('circle')
       .attr('r', 5)
-      .style('fill', '#69b3a2');
+      .style('fill', d => {
+        if (d.name === this.props.target) return 'red';
+        else return '#69b3a2';
+      });
 
     const labels = node
       .append('text')

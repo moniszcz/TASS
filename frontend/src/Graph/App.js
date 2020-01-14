@@ -110,7 +110,14 @@ class App extends React.Component {
    */
   createView(formInputs) {
     const { graphTypes } = this;
+    const { graphType } = this.state;
     const toastContainer = getToastContainer();
+    let target;
+    if (graphType === 'Sellers') {
+      target = this.state.selectedCountry;
+    } else {
+      target = this.state.tankType;
+    }
     const view = (
       <>
         <Row>
@@ -132,7 +139,7 @@ class App extends React.Component {
             </Form>
           </Col>
           <Col>
-            <GraphSVG dataset={this.state.dataset}></GraphSVG>
+            <GraphSVG dataset={this.state.dataset} target={target}></GraphSVG>
           </Col>
         </Row>
         {toastContainer}
