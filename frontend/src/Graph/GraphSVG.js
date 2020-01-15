@@ -21,7 +21,6 @@ class Graph extends React.Component {
       this.props.dataset !== this.previousDataset
     ) {
       this.previousDataset = this.props.dataset;
-      console.log('LENGTH', this.props.dataset.links.length);
       if (this.props.dataset.links.length > 500) {
         this.strength = -400;
       } else {
@@ -44,7 +43,6 @@ class Graph extends React.Component {
     const width = this.width;
     const height = this.height;
     const dataset = this.props.dataset;
-    console.log('dataset', dataset.links);
 
     this.svg.selectAll('*').remove();
 
