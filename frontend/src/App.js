@@ -24,14 +24,12 @@ class App extends React.Component {
   }
 
   async componentDidMount() {
-    const { tankTypes } = await downloadData(
-      config.API_ENDPOINTS.TANKTYPES,
-      {}
-    );
-    const { countries } = await downloadData(
-      config.API_ENDPOINTS.COUNTRIES,
-      {}
-    );
+    let response = await Promise.all([
+      await downloadData(config.API_ENDPOINTS.TANKTYPES, {}),
+      await downloadData(config.API_ENDPOINTS.COUNTRIES, {})
+    ]);
+    const { tankTypes } = response[0];
+    const { countries } = response[1];
     this.setState({ tankTypes, countries });
   }
 
