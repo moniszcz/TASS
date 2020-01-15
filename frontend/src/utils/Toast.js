@@ -11,10 +11,24 @@ const createNoDataToast = () =>
     draggable: true
   });
 
+const createLoadingDataToast = () => {
+  toast.info('Loading data 🤔', {
+    position: 'top-right',
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true
+  });
+};
+
+const dismissToasts = () => {
+  toast.dismiss();
+};
+
 const getToastContainer = () => (
   <ToastContainer
     position="top-right"
-    autoClose={2000}
+    autoClose={false}
     hideProgressBar={false}
     newestOnTop={false}
     closeOnClick
@@ -25,4 +39,9 @@ const getToastContainer = () => (
   />
 );
 
-export { createNoDataToast, getToastContainer };
+export {
+  createNoDataToast,
+  getToastContainer,
+  createLoadingDataToast,
+  dismissToasts
+};
