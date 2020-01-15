@@ -56,7 +56,6 @@ class App extends React.Component {
       selectedCountry,
       allianceOnly
     } = this.state;
-    console.log(this.state);
 
     let dataset;
 
@@ -73,8 +72,6 @@ class App extends React.Component {
       };
       dataset = await downloadData(config.API_ENDPOINTS.TANKGRAPH, params);
     }
-
-    console.log(dataset);
 
     if (!dataset || dataset.nodes.length === 0) {
       createNoDataToast();

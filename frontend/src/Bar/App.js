@@ -60,7 +60,6 @@ class App extends React.Component {
 
   async handleButtonClick() {
     const { threshold, tankType, chartType, selectedCountries } = this.state;
-    console.log('state', this.state);
 
     let data;
     if (chartType === this.chartTypes[0]) {
@@ -106,7 +105,6 @@ class App extends React.Component {
 
   handleSubmit = e => {
     e.preventDefault();
-    console.log(e);
   };
 
   /**

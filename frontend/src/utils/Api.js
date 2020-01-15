@@ -9,10 +9,7 @@ const downloadData = async (endpoint, params) => {
   } else {
     url = `${config.APIREMOTEURL}/${endpoint}`;
   }
-  console.log('url', url);
-  console.log('params', params);
   const response = await axios.get(url, { params });
-  console.log('response.data', response.data);
   return response.data;
 };
 
