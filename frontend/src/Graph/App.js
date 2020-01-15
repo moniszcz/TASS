@@ -8,6 +8,7 @@ import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
+import Spinner from 'react-bootstrap/Spinner';
 import { getToastContainer, createNoDataToast } from '../utils/Toast';
 
 class App extends React.Component {
@@ -15,6 +16,7 @@ class App extends React.Component {
     super(props);
     this.graphTypes = ['Sellers', 'Tank'];
     this.state = {
+      isLoading: false,
       dataset: null,
       graphType: this.graphTypes[0],
       kCore: 0,
@@ -63,14 +65,18 @@ class App extends React.Component {
       const params = {
         country_name: selectedCountry
       };
+      this.setState({ isLoading: true });
       dataset = await downloadData(config.API_ENDPOINTS.SELLERSGRAPH, params);
+      this.setState({ isLoading: false });
     } else {
       const params = {
         k_core: kCore,
         tank_name: tankType,
         alliance_only: allianceOnly
       };
+      this.setState({ isLoading: true });
       dataset = await downloadData(config.API_ENDPOINTS.TANKGRAPH, params);
+      this.setState({ isLoading: false });
     }
 
     if (!dataset || dataset.nodes.length === 0) {
@@ -101,6 +107,27 @@ class App extends React.Component {
     this.setState({ selectedCountry: event.target.value });
   }
 
+  getButton() {
+    const { isLoading } = this.state;
+
+    if (isLoading) {
+      return (
+        <Button onClick={() => this.handleButtonClick()}>
+          <Spinner
+            as="span"
+            animation="border"
+            size="sm"
+            role="status"
+            aria-hidden="true"
+          />
+          <span className="sr-only">Loading...</span>
+        </Button>
+      );
+    } else {
+      return <Button onClick={() => this.handleButtonClick()}>Update</Button>;
+    }
+  }
+
   /**
    * Create main view of this component.
    * @param {*} formInputs - graph form
@@ -109,6 +136,7 @@ class App extends React.Component {
     const { graphTypes } = this;
     const { graphType } = this.state;
     const toastContainer = getToastContainer();
+    const button = this.getButton();
     let target;
     if (graphType === 'Sellers') {
       target = this.state.selectedCountry;
@@ -132,7 +160,7 @@ class App extends React.Component {
                 </Form.Control>
               </Form.Group>
               {formInputs}
-              <Button onClick={() => this.handleButtonClick()}>Update</Button>
+              {button}
             </Form>
           </Col>
           <Col>

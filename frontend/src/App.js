@@ -13,6 +13,12 @@ import Row from 'react-bootstrap/Row';
 import downloadData from './utils/Api';
 import config from './config';
 
+import {
+  createLoadingDataToast,
+  getToastContainer,
+  dismissToasts
+} from './utils/Toast';
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -24,14 +30,14 @@ class App extends React.Component {
   }
 
   async componentDidMount() {
-    const { tankTypes } = await downloadData(
-      config.API_ENDPOINTS.TANKTYPES,
-      {}
-    );
-    const { countries } = await downloadData(
-      config.API_ENDPOINTS.COUNTRIES,
-      {}
-    );
+    createLoadingDataToast();
+    let response = await Promise.all([
+      await downloadData(config.API_ENDPOINTS.TANKTYPES, {}),
+      await downloadData(config.API_ENDPOINTS.COUNTRIES, {})
+    ]);
+    dismissToasts();
+    const { tankTypes } = response[0];
+    const { countries } = response[1];
     this.setState({ tankTypes, countries });
   }
 
@@ -41,6 +47,7 @@ class App extends React.Component {
 
   render() {
     const { selectedOption } = this.state;
+    const toastContainer = getToastContainer();
 
     return (
       <div className="App">
