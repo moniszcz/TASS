@@ -1,5 +1,6 @@
 import React from 'react';
 import './App.css';
+import 'react-toastify/dist/ReactToastify.css';
 
 import { default as GraphView } from './Graph/App';
 import { default as BarChart } from './Bar/App';
@@ -8,9 +9,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Container from 'react-bootstrap/Container';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
-import Button from 'react-bootstrap/Button';
 
-import downloadData from './Api';
+import downloadData from './utils/Api';
 import config from './config';
 
 class App extends React.Component {

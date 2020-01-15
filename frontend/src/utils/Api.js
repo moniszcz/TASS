@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import config from './config';
+import config from '../config';
 
 const downloadData = async (endpoint, params) => {
   const url = `${config.APIURL}/${endpoint}`;

@@ -2,12 +2,13 @@ import React from 'react';
 
 import GraphSVG from './GraphSVG';
 import config from '../config';
-import downloadData from '../Api';
+import downloadData from '../utils/Api';
 
 import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
+import { getToastContainer, createNoDataToast } from '../utils/Toast';
 
 class App extends React.Component {
   constructor(props) {
@@ -16,17 +17,20 @@ class App extends React.Component {
     this.state = {
       dataset: null,
       graphType: this.graphTypes[0],
-      kCore: '',
+      kCore: 0,
       tankType: '',
       counter: 0,
-      selectedCountries: [],
+      selectedCountry: '',
       allianceOnly: false
     };
   }
 
   componentDidUpdate() {
-    if (!this.state.tankType) {
+    if (!this.state.tankType && this.props.tankTypes) {
       this.setState({ tankType: this.props.tankTypes[0] });
+    }
+    if (!this.state.selectedCountry && this.props.countries) {
+      this.setState({ selectedCountry: this.props.countries[0] });
     }
   }
 
@@ -45,23 +49,36 @@ class App extends React.Component {
   }
 
   async handleButtonClick() {
-    console.log('halo');
-    const { kCore, tankType, graphType, selectedCountries } = this.state;
+    const {
+      kCore,
+      tankType,
+      graphType,
+      selectedCountry,
+      allianceOnly
+    } = this.state;
     console.log(this.state);
 
+    let dataset;
+
     if (graphType === 'Sellers') {
-      const params = { country_names: selectedCountries, k_core: kCore };
-      const dataset = await downloadData(
-        config.API_ENDPOINTS.SELLERSGRAPH,
-        params
-      );
-      this.setState({ dataset });
+      const params = {
+        country_name: selectedCountry
+      };
+      dataset = await downloadData(config.API_ENDPOINTS.SELLERSGRAPH, params);
     } else {
-      const params = { k_core: kCore, tank_name: tankType };
-      const dataset = await downloadData(
-        config.API_ENDPOINTS.TANKGRAPH,
-        params
-      );
+      const params = {
+        k_core: kCore,
+        tank_name: tankType,
+        alliance_only: allianceOnly
+      };
+      dataset = await downloadData(config.API_ENDPOINTS.TANKGRAPH, params);
+    }
+
+    console.log(dataset);
+
+    if (!dataset || dataset.nodes.length === 0) {
+      createNoDataToast();
+    } else {
       this.setState({ dataset });
     }
   }
@@ -84,11 +101,7 @@ class App extends React.Component {
   }
 
   handleCountryChange(event) {
-    const countries = [];
-    for (const el of event.target.selectedOptions) {
-      countries.push(el.value);
-    }
-    this.setState({ selectedCountries: countries });
+    this.setState({ selectedCountry: event.target.value });
   }
 
   /**
@@ -97,29 +110,40 @@ class App extends React.Component {
    */
   createView(formInputs) {
     const { graphTypes } = this;
+    const { graphType } = this.state;
+    const toastContainer = getToastContainer();
+    let target;
+    if (graphType === 'Sellers') {
+      target = this.state.selectedCountry;
+    } else {
+      target = this.state.tankType;
+    }
     const view = (
-      <Row>
-        <Col xs={3}>
-          <Form>
-            <Form.Group controlId="type">
-              <Form.Label>Graph type</Form.Label>
-              <Form.Control
-                as="select"
-                onChange={event => this.handleGraphTypeChange(event)}
-              >
-                {graphTypes.map(element => (
-                  <option>{element}</option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-            {formInputs}
-            <Button onClick={() => this.handleButtonClick()}>Update</Button>
-          </Form>
-        </Col>
-        <Col>
-          <GraphSVG dataset={this.state.dataset}></GraphSVG>
-        </Col>
-      </Row>
+      <>
+        <Row>
+          <Col xs={3}>
+            <Form>
+              <Form.Group controlId="type">
+                <Form.Label>Graph type</Form.Label>
+                <Form.Control
+                  as="select"
+                  onChange={event => this.handleGraphTypeChange(event)}
+                >
+                  {graphTypes.map(element => (
+                    <option>{element}</option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+              {formInputs}
+              <Button onClick={() => this.handleButtonClick()}>Update</Button>
+            </Form>
+          </Col>
+          <Col>
+            <GraphSVG dataset={this.state.dataset} target={target}></GraphSVG>
+          </Col>
+        </Row>
+        {toastContainer}
+      </>
     );
     return view;
   }
@@ -129,13 +153,13 @@ class App extends React.Component {
    */
   getSellersForm() {
     const { countries } = this.props;
-    return (
+    const { tankTypes } = this.props;
+    const formWithAllianceOnly = (
       <>
-        <Form.Group controlId="country">
+        <Form.Group controlId="type">
           <Form.Label>Country</Form.Label>
           <Form.Control
             as="select"
-            multiple
             onChange={event => this.handleCountryChange(event)}
           >
             {countries.map(element => (
@@ -143,16 +167,25 @@ class App extends React.Component {
             ))}
           </Form.Control>
         </Form.Group>
-        <Form.Group controlId="k-core">
-          <Form.Label>K-core</Form.Label>
+      </>
+    );
+    const formWithoutAllianceOnly = (
+      <>
+        <Form.Group controlId="type">
+          <Form.Label>Country</Form.Label>
           <Form.Control
-            type="text"
-            value={this.state.kCore}
-            onChange={event => this.handleKcoreChange(event)}
-          ></Form.Control>
+            as="select"
+            onChange={event => this.handleCountryChange(event)}
+          >
+            {countries.map(element => (
+              <option>{element}</option>
+            ))}
+          </Form.Control>
         </Form.Group>
       </>
     );
+    if (this.state.allianceOnly) return formWithAllianceOnly;
+    else return formWithoutAllianceOnly;
   }
 
   /**
@@ -160,7 +193,7 @@ class App extends React.Component {
    */
   getTankForm() {
     const { tankTypes } = this.props;
-    return (
+    const formWithAllianceOnly = (
       <>
         <Form.Group controlId="type">
           <Form.Label>Tank</Form.Label>
@@ -179,17 +212,50 @@ class App extends React.Component {
             type="text"
             value={this.state.kCore}
             onChange={event => this.handleKcoreChange(event)}
+            onKeyPress={event => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                this.handleButtonClick();
+              }
+            }}
           ></Form.Control>
         </Form.Group>
         <Form.Group controlId="formBasicCheckbox">
           <Form.Check
             type="checkbox"
             label="Alliance only"
+            checked={this.state.allianceOnly}
             onChange={event => this.handleAllianceOnlyChange(event)}
           />
         </Form.Group>
       </>
     );
+    const formWithoutAllianceOnly = (
+      <>
+        <Form.Group controlId="type">
+          <Form.Label>Tank</Form.Label>
+          <Form.Control
+            as="select"
+            onChange={event => this.handleTankTypeChange(event)}
+          >
+            {tankTypes.map(element => (
+              <option>{element}</option>
+            ))}
+          </Form.Control>
+        </Form.Group>
+        <Form.Group controlId="formBasicCheckbox">
+          <Form.Check
+            type="checkbox"
+            label="Alliance only"
+            checked={this.state.allianceOnly}
+            onChange={event => this.handleAllianceOnlyChange(event)}
+          />
+        </Form.Group>
+      </>
+    );
+
+    if (this.state.allianceOnly) return formWithAllianceOnly;
+    else return formWithoutAllianceOnly;
   }
 }
 

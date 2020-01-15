@@ -7,6 +7,10 @@ from flask_cors import CORS
 
 from sqlalchemy.ext.declarative import declarative_base
 
+import networkx as nx
+
+from functools import reduce
+
 Base = declarative_base()
 
 app = Flask(__name__.split(".")[0])
@@ -78,15 +82,7 @@ def chart1_get():
     chart = {
         "labels": country_names,
         "datasets": [
-            {
-                "label": "Number of tanks",
-                # "backgroundColor": "rgba(255,99,132,0.2)",
-                # "borderColor": "rgba(255,99,132,1)",
-                "borderWidth": 2,
-                # "hoverBackgroundColor": "rgba(255,99,132,0.4)",
-                # "hoverBorderColor": "rgba(255,99,132,1)",
-                "data": quantity,
-            }
+            {"label": "Number of tanks", "borderWidth": 2, "data": quantity}
         ],
     }
 
@@ -100,7 +96,8 @@ def chart2_get():
     """?????? Wykres wielkości produkcji ??????
     TODO: Make country names a list.
 
-    Kolejnym interesującym scenariuszem użycia aplikacji byłby wykres prezentujący ilości wyprodukowanych czołgów oraz ich eksport przez kraje wybrane przez użytkownika
+    Kolejnym interesującym scenariuszem użycia aplikacji byłby wykres prezentujący ilości wyprodukowanych czołgów oraz ich eksport 
+    przez kraje wybrane przez użytkownika
 
     :param country_names:
     :type country_names: List[str]
@@ -110,7 +107,62 @@ def chart2_get():
     country_names = request.args.getlist("country_names[]")
     print(f"country_names: {country_names}")
 
-    return jsonify(chart2)
+    session = Session()
+
+    # list of countries ids
+    country_ids = []
+    # aggregative quantity of owned tanks (country_name[0] has quantity[0] tanks etc.)
+    quantity = []
+    # aggregative quantity of possessed tanks (country_name[0] has produced export_quantity[0] tanks etc.)
+    export_quantity = []
+
+    for country_name in country_names:
+        country_id = (
+            session.query(Country.id).filter_by(name=country_name).one()[0]
+        )
+        country_ids.append(country_id)
+
+    # tanks owned
+    for c_id in country_ids:
+        # owned tanks by type for country_id equal c_id
+        tmp = []
+        # list of tuples, where first element is a quantity of tanks per type
+        quants = session.query(Tank.quantity).filter_by(country_id=c_id).all()
+        for quant in quants:
+            tmp.append(quant[0])
+        # list for reduce function can't be empty
+        if not tmp:
+            tmp.append(0)
+        quantity.append(reduce(lambda a, b: a + b, tmp))
+    # print(quantity)
+
+    # tanks exported
+    for c_id in country_ids:
+        # exported tanks by type for country_id equal c_id
+        tmp = []
+        exps = session.query(Tank.quantity).filter_by(origin_id=c_id).all()
+        for exp in exps:
+            tmp.append(exp[0])
+        if not tmp:
+            tmp.append(0)
+        export_quantity.append(reduce(lambda a, b: a + b, tmp))
+    # print(export_quantity)
+
+    session.close()
+
+    chart = {
+        "labels": country_names,
+        "datasets": [
+            {"label": "Number of tanks", "borderWidth": 2, "data": quantity},
+            {
+                "label": "Number of exported tanks",
+                "borderWidth": 2,
+                "data": export_quantity,
+            },
+        ],
+    }
+
+    return jsonify(chart)
 
 
 @app.route("/chart3")
@@ -118,7 +170,8 @@ def chart3_get():
     """?????? Wykres posiadanych czołgów ??????
     TODO: Make country names a list.
 
-    Użytkownik będzie miał możliwość wyboru z dropdownu kilku krajów dla których chce przeprowadzić porównanie, a następnie wykreślić na wykresie informacje o ilości i typach posiadanych czołgów
+    Użytkownik będzie miał możliwość wyboru z dropdownu kilku krajów dla których chce przeprowadzić porównanie, 
+    a następnie wykreślić na wykresie informacje o ilości i typach posiadanych czołgów
 
     :param country_name:
     :type country_name: List[str]
@@ -127,14 +180,60 @@ def chart3_get():
     """
     country_names = request.args.getlist("country_names[]")
 
-    return jsonify(chart3)
+    session = Session()
+
+    country_tanks = {}
+
+    tank_names = set()
+
+    output = {}
+
+    for country_name in country_names:
+        country_tanks[country_name] = {}
+
+    for country_name in country_names:
+        country = session.query(Country).filter_by(name=country_name).one()
+        for tank in country.country:
+            tank_names.add(tank.name)
+            country_tanks[country_name][tank.name] = tank.quantity
+
+    # print(country_tanks)
+    # print(tank_names)
+
+    for tank_name in tank_names:
+        output[tank_name] = []
+
+    for country, tanks in country_tanks.items():
+        for tank_name in tank_names:
+            if tank_name in tanks:
+                output[tank_name].append(tanks[tank_name])
+            else:
+                output[tank_name].append(0)
+
+    # print(output)
+
+    labels = country_names
+    datasets = []
+
+    for key, value in output.items():
+        row = {"label": key, "borderWidth": 2, "data": value}
+        datasets.append(row)
+
+    chart = {"labels": labels, "datasets": datasets}
+
+    # print(chart)
+
+    session.close()
+
+    return jsonify(chart)
 
 
 @app.route("/sellersGraph")
 def sellers_graph_get():
     """Graf powiązań producentów z krajami kupującymi
 
-    Graf przedstawiający powiązania producentów z krajami do których eksportowane są ich czołgi. Dodatkowo przewidziana opcja ograniczenia do krajów będących w sojuszu
+    Graf przedstawiający powiązania producentów z krajami do których eksportowane są ich czołgi. 
+    Dodatkowo przewidziana opcja ograniczenia do krajów będących w sojuszu.
 
     :param country_name:
     :type country_name: str
@@ -145,15 +244,78 @@ def sellers_graph_get():
 
     :rtype: Graph
     """
-    print(request.args)
-    country_names = request.args.getlist("country_names[]")
+    country_name = request.args.get("country_name")
     k_core = request.args.get("k_core")
-    alliance_only = request.args.get("alliance_only")
+    if k_core:
+        k_core = int(k_core)
+    alliance_only = request.args.get("alliance_only") == "true"
 
     print(
-        f"country_names: {country_names}, k_core: {k_core}, alliance_only: {alliance_only}"
+        f"country_name: {country_name}, k_core: {k_core}, alliance_only: {alliance_only}"
     )
-    return jsonify(dataset1)
+    session = Session()
+    c_id = session.query(Country.id).filter_by(name=country_name).one()[0]
+
+    # Find countries possessing tanks produced by country_name
+    query = session.query(Tank).filter_by(origin_id=c_id)
+    ids_lst = [res.country_id for res in query]
+    ids_lst.append(c_id)
+    ids_lst = sorted(set(ids_lst))
+
+    edges = [
+        {"source": c_id, "target": ids_lst[i]} for i in range(len(ids_lst))
+    ]
+
+    edges_graph = [(c_id, ids_lst[i]) for i in range(len(ids_lst))]
+
+    if not alliance_only:
+        nodes = []
+        for i in ids_lst:
+            country_n = session.query(Country.name).filter_by(id=i).one()[0]
+            nodes.append({"id": i, "name": country_n})
+
+        links = edges
+
+    if alliance_only:
+        query_alliance = session.query(Alliance).filter_by(country1_id=c_id)
+        all_sellers = [
+            {"source": c_id, "target": instance.country2_id}
+            for instance in query_alliance
+        ]
+        all_sellers_graph = [
+            (c_id, instance.country2_id) for instance in query_alliance
+        ]
+
+        alliance_sellers = [d for d in edges if d in all_sellers]
+
+        alliance_sellers_graph = list(
+            set(edges_graph).intersection(all_sellers_graph)
+        )
+
+        G = nx.Graph()
+        G.add_edges_from(alliance_sellers_graph)
+        G.to_undirected()
+        G1 = nx.k_core(G, k=k_core)
+        g = nx.to_dict_of_lists(G1)
+
+        links = []
+        for val in g.values():
+            for i in range(len(val)):
+                if val[i] != c_id:
+                    links.append({"source": c_id, "target": val[i]})
+
+        nodes = []
+        for key in g.keys():
+            country_name = (
+                session.query(Country.name).filter_by(id=key).one()[0]
+            )
+            nodes.append({"id": key, "name": country_name})
+
+    session.close()
+
+    response = {"nodes": nodes, "links": links}
+    print(response)
+    return jsonify(response)
 
 
 @app.route("/tankGraph")
@@ -173,12 +335,75 @@ def tank_graph_get():
     """
     tank_name = request.args.get("tank_name")
     k_core = request.args.get("k_core")
-    alliance_only = request.args.get("alliance_only")
+    if k_core:
+        k_core = int(k_core)
+    alliance_only = request.args.get("alliance_only") == "true"
+
+    session = Session()
+    # Find countries possesing the same type of tanks
+    query = (
+        session.query(Country)
+        .join(Country.country)
+        .filter(Country.country.property.mapper.class_.name == tank_name)
+    )
+    ids_lst = [res.id for res in query]
+    edges = []
+    edges_graph = []
+    for i in range(len(ids_lst)):
+        for j in range(i + 1, len(ids_lst)):
+            edges.append({"source": ids_lst[i], "target": ids_lst[j]})
+            edges_graph.append((ids_lst[i], ids_lst[j]))
+
+    if not alliance_only:
+        nodes = [
+            {"id": instance.id, "name": instance.name} for instance in query
+        ]
+        nodes_graph = [(instance.id, instance.name) for instance in query]
+
+        links = edges
+
+    if alliance_only:
+        query_alliance = session.query(Alliance).all()
+        all_tanks = [
+            {"source": instance.country1_id, "target": instance.country2_id}
+            for instance in query_alliance
+        ]
+        all_tanks_graph = [
+            (instance.country1_id, instance.country2_id)
+            for instance in query_alliance
+        ]
+
+        alliance_tanks = [d for d in edges if d in all_tanks]
+        alliance_tanks_graph = list(
+            set(edges_graph).intersection(all_tanks_graph)
+        )
+
+        G = nx.Graph()
+        G.add_edges_from(alliance_tanks_graph)
+        G.to_undirected()
+        G1 = nx.k_core(G, k=k_core)
+        g = nx.to_dict_of_lists(G1)
+
+        links = []
+        for key, val in g.items():
+            for i in range(len(val)):
+                links.append({"source": key, "target": val[i]})
+
+        nodes = []
+        for key in g.keys():
+            country_name = (
+                session.query(Country.name).filter_by(id=key).one()[0]
+            )
+            nodes.append({"id": key, "name": country_name})
+
+    session.close()
 
     print(
         f"tank_name: {tank_name}, k_core: {k_core}, alliance_only: {alliance_only}"
     )
-    return jsonify(dataset2)
+
+    response = {"nodes": nodes, "links": links}
+    return jsonify(response)
 
 
 class Tank(Base):
@@ -227,181 +452,3 @@ class Alliance(Base):
 
     def __repr__(self):
         return f"<Alliance(country1={self.country1_id}, country2={self.country2_id})>"
-
-
-chart1 = {
-    "labels": ["Poland", "Germany", "Russia"],
-    "datasets": [
-        {"label": "Number of tanks", "borderWidth": 2, "data": [65, 59, 80],}
-    ],
-}
-
-chart2 = {
-    "labels": ["Poland", "Germany", "Russia"],
-    "datasets": [
-        {"label": "Number of tanks", "borderWidth": 2, "data": [65, 59, 80],},
-        {
-            "label": "Number of exported tanks",
-            "borderWidth": 2,
-            "data": [20, 30, 40],
-        },
-    ],
-}
-
-chart3 = {
-    "labels": ["Poland", "Germany", "Russia"],
-    "datasets": [
-        {"label": "T45", "borderWidth": 2, "data": [65, 59, 80],},
-        {"label": "T55", "borderWidth": 2, "data": [20, 0, 40],},
-        {"label": "T65", "borderWidth": 2, "data": [20, 0, 40],},
-        {"label": "T75", "borderWidth": 2, "data": [20, 0, 40],},
-        {"label": "T85", "borderWidth": 2, "data": [20, 0, 40],},
-        {"label": "T95", "borderWidth": 2, "data": [20, 0, 40],},
-        {"label": "T15", "borderWidth": 2, "data": [20, 0, 40],},
-        {"label": "T25", "borderWidth": 2, "data": [20, 0, 40],},
-        {"label": "T35", "borderWidth": 2, "data": [20, 0, 40],},
-    ],
-}
-
-dataset1 = {
-    "nodes": [
-        {"id": 1, "name": "A"},
-        {"id": 2, "name": "B"},
-        {"id": 3, "name": "C"},
-        {"id": 4, "name": "D"},
-        {"id": 5, "name": "E"},
-        {"id": 6, "name": "F"},
-        {"id": 7, "name": "G"},
-        {"id": 8, "name": "H"},
-        {"id": 9, "name": "I"},
-        {"id": 10, "name": "J"},
-    ],
-    "links": [
-        {"source": 1, "target": 2},
-        {"source": 1, "target": 5},
-        {"source": 1, "target": 6},
-        {"source": 2, "target": 3},
-        {"source": 2, "target": 7},
-        {"source": 3, "target": 4},
-        {"source": 8, "target": 3},
-        {"source": 4, "target": 5},
-        {"source": 4, "target": 9},
-        {"source": 5, "target": 10},
-    ],
-}
-
-dataset2 = {
-    "nodes": [
-        {"id": "Myriel", "name": "Myriel", "group": 1},
-        {"id": "Napoleon", "name": "Napoleon", "group": 1},
-        {"id": "Mlle.Baptistine", "name": "Mlle.Baptistine", "group": 1},
-        {"id": "Mme.Magloire", "name": "Mme.Magloire", "group": 1},
-        {"id": "CountessdeLo", "name": "CountessdeLo", "group": 1},
-        {"id": "Geborand", "name": "Geborand", "group": 1},
-        {"id": "Champtercier", "name": "Champtercier", "group": 1},
-        {"id": "Cravatte", "name": "Cravatte", "group": 1},
-        {"id": "Count", "name": "Count", "group": 1},
-        {"id": "OldMan", "name": "OldMan", "group": 1},
-        {"id": "Labarre", "name": "Labarre", "group": 2},
-        {"id": "Valjean", "name": "Valjean", "group": 2},
-        {"id": "Marguerite", "name": "Marguerite", "group": 3},
-        {"id": "Mme.deR", "name": "Mme.deR", "group": 2},
-        {"id": "Isabeau", "name": "Isabeau", "group": 2},
-        {"id": "Gervais", "name": "Gervais", "group": 2},
-        {"id": "Tholomyes", "name": "Tholomyes", "group": 3},
-        {"id": "Listolier", "name": "Listolier", "group": 3},
-        {"id": "Fameuil", "name": "Fameuil", "group": 3},
-        {"id": "Blacheville", "name": "Blacheville", "group": 3},
-        {"id": "Favourite", "name": "Favourite", "group": 3},
-        {"id": "Dahlia", "name": "Dahlia", "group": 3},
-        {"id": "Zephine", "name": "Zephine", "group": 3},
-        {"id": "Fantine", "name": "Fantine", "group": 3},
-        {"id": "Mme.Thenardier", "name": "Mme.Thenardier", "group": 4},
-        {"id": "Thenardier", "name": "Thenardier", "group": 4},
-        {"id": "Cosette", "name": "Cosette", "group": 5},
-        {"id": "Javert", "name": "Javert", "group": 4},
-        {"id": "Fauchelevent", "name": "Fauchelevent", "group": 0},
-        {"id": "Bamatabois", "name": "Bamatabois", "group": 2},
-        {"id": "Perpetue", "name": "Perpetue", "group": 3},
-        {"id": "Simplice", "name": "Simplice", "group": 2},
-        {"id": "Scaufflaire", "name": "Scaufflaire", "group": 2},
-        {"id": "Woman1", "name": "Woman1", "group": 2},
-        {"id": "Judge", "name": "Judge", "group": 2},
-        {"id": "Champmathieu", "name": "Champmathieu", "group": 2},
-        {"id": "Brevet", "name": "Brevet", "group": 2},
-        {"id": "Chenildieu", "name": "Chenildieu", "group": 2},
-        {"id": "Cochepaille", "name": "Cochepaille", "group": 2},
-        {"id": "Pontmercy", "name": "Pontmercy", "group": 4},
-        {"id": "Boulatruelle", "name": "Boulatruelle", "group": 6},
-        {"id": "Eponine", "name": "Eponine", "group": 4},
-        {"id": "Anzelma", "name": "Anzelma", "group": 4},
-        {"id": "Woman2", "name": "Woman2", "group": 5},
-        {"id": "MotherInnocent", "name": "MotherInnocent", "group": 0},
-        {"id": "Gribier", "name": "Gribier", "group": 0},
-        {"id": "Jondrette", "name": "Jondrette", "group": 7},
-        {"id": "Mme.Burgon", "name": "Mme.Burgon", "group": 7},
-        {"id": "Gavroche", "name": "Gavroche", "group": 8},
-        {"id": "Gillenormand", "name": "Gillenormand", "group": 5},
-        {"id": "Magnon", "name": "Magnon", "group": 5},
-        {"id": "Mlle.Gillenormand", "name": "Mlle.Gillenormand", "group": 5},
-        {"id": "Mme.Pontmercy", "name": "Mme.Pontmercy", "group": 5},
-        {"id": "Mlle.Vaubois", "name": "Mlle.Vaubois", "group": 5},
-        {"id": "Lt.Gillenormand", "name": "Lt.Gillenormand", "group": 5},
-        {"id": "Marius", "name": "Marius", "group": 8},
-        {"id": "BaronessT", "name": "BaronessT", "group": 5},
-        {"id": "Mabeuf", "name": "Mabeuf", "group": 8},
-        {"id": "Enjolras", "name": "Enjolras", "group": 8},
-        {"id": "Combeferre", "name": "Combeferre", "group": 8},
-        {"id": "Prouvaire", "name": "Prouvaire", "group": 8},
-        {"id": "Feuilly", "name": "Feuilly", "group": 8},
-        {"id": "Courfeyrac", "name": "Courfeyrac", "group": 8},
-        {"id": "Bahorel", "name": "Bahorel", "group": 8},
-        {"id": "Bossuet", "name": "Bossuet", "group": 8},
-        {"id": "Joly", "name": "Joly", "group": 8},
-        {"id": "Grantaire", "name": "Grantaire", "group": 8},
-        {"id": "MotherPlutarch", "name": "MotherPlutarch", "group": 9},
-        {"id": "Gueulemer", "name": "Gueulemer", "group": 4},
-        {"id": "Babet", "name": "Babet", "group": 4},
-        {"id": "Claquesous", "name": "Claquesous", "group": 4},
-        {"id": "Montparnasse", "name": "Montparnasse", "group": 4},
-        {"id": "Toussaint", "name": "Toussaint", "group": 5},
-        {"id": "Child1", "name": "Child1", "group": 10},
-        {"id": "Child2", "name": "Child2", "group": 10},
-        {"id": "Brujon", "name": "Brujon", "group": 4},
-        {"id": "Mme.Hucheloup", "name": "Mme.Hucheloup", "group": 8},
-    ],
-    "links": [
-        {"source": "Claquesous", "target": "Mme.Thenardier", "value": 1},
-        {"source": "Claquesous", "target": "Javert", "value": 1},
-        {"source": "Claquesous", "target": "Eponine", "value": 1},
-        {"source": "Claquesous", "target": "Enjolras", "value": 1},
-        {"source": "Montparnasse", "target": "Javert", "value": 1},
-        {"source": "Montparnasse", "target": "Babet", "value": 2},
-        {"source": "Montparnasse", "target": "Gueulemer", "value": 2},
-        {"source": "Montparnasse", "target": "Claquesous", "value": 2},
-        {"source": "Montparnasse", "target": "Valjean", "value": 1},
-        {"source": "Montparnasse", "target": "Gavroche", "value": 1},
-        {"source": "Montparnasse", "target": "Eponine", "value": 1},
-        {"source": "Montparnasse", "target": "Thenardier", "value": 1},
-        {"source": "Toussaint", "target": "Cosette", "value": 2},
-        {"source": "Toussaint", "target": "Javert", "value": 1},
-        {"source": "Toussaint", "target": "Valjean", "value": 1},
-        {"source": "Child1", "target": "Gavroche", "value": 2},
-        {"source": "Child2", "target": "Gavroche", "value": 2},
-        {"source": "Child2", "target": "Child1", "value": 3},
-        {"source": "Brujon", "target": "Babet", "value": 3},
-        {"source": "Brujon", "target": "Gueulemer", "value": 3},
-        {"source": "Brujon", "target": "Thenardier", "value": 3},
-        {"source": "Brujon", "target": "Gavroche", "value": 1},
-        {"source": "Brujon", "target": "Eponine", "value": 1},
-        {"source": "Brujon", "target": "Claquesous", "value": 1},
-        {"source": "Brujon", "target": "Montparnasse", "value": 1},
-        {"source": "Mme.Hucheloup", "target": "Bossuet", "value": 1},
-        {"source": "Mme.Hucheloup", "target": "Joly", "value": 1},
-        {"source": "Mme.Hucheloup", "target": "Grantaire", "value": 1},
-        {"source": "Mme.Hucheloup", "target": "Bahorel", "value": 1},
-        {"source": "Mme.Hucheloup", "target": "Courfeyrac", "value": 1},
-        {"source": "Mme.Hucheloup", "target": "Gavroche", "value": 1},
-        {"source": "Mme.Hucheloup", "target": "Enjolras", "value": 1},
-    ],
-}

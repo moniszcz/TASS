@@ -9,10 +9,12 @@ import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
+import Select from 'react-select';
 
-import downloadData from '../Api';
+import downloadData from '../utils/Api';
 
 import config from '../config';
+import { createNoDataToast, getToastContainer } from '../utils/Toast';
 
 class App extends React.Component {
   constructor(props) {
@@ -25,7 +27,7 @@ class App extends React.Component {
       }
     });
 
-    this.chartTypes = ['Chart1', 'Chart2', 'Chart3'];
+    this.chartTypes = ['Owned Tanks', 'Owned/Exported Tanks', 'Types of Tanks'];
 
     this.state = {
       data: {},
@@ -45,9 +47,9 @@ class App extends React.Component {
   render() {
     const { chartType } = this.state;
     let form;
-    if (chartType === 'Chart1') {
+    if (chartType === this.chartTypes[0]) {
       form = this.getChart1Form();
-    } else if (chartType === 'Chart2') {
+    } else if (chartType === this.chartTypes[1]) {
       form = this.getChart2Form();
     } else {
       form = this.getChart3Form();
@@ -60,18 +62,20 @@ class App extends React.Component {
     const { threshold, tankType, chartType, selectedCountries } = this.state;
     console.log('state', this.state);
 
-    if (chartType === 'Chart1') {
+    let data;
+    if (chartType === this.chartTypes[0]) {
       const params = { tank_name: tankType, threshold };
-      const data = await downloadData(config.API_ENDPOINTS.CHART1, params);
-      console.log('aspect6', Aspect6);
-      this.setState({ data });
-    } else if (chartType === 'Chart2') {
+      data = await downloadData(config.API_ENDPOINTS.CHART1, params);
+    } else if (chartType === this.chartTypes[1]) {
       const params = { country_names: selectedCountries };
-      const data = await downloadData(config.API_ENDPOINTS.CHART2, params);
-      this.setState({ data });
+      data = await downloadData(config.API_ENDPOINTS.CHART2, params);
     } else {
       const params = { country_names: selectedCountries };
-      const data = await downloadData(config.API_ENDPOINTS.CHART3, params);
+      data = await downloadData(config.API_ENDPOINTS.CHART3, params);
+    }
+    if (!data) {
+      createNoDataToast();
+    } else {
       this.setState({ data });
     }
   }
@@ -90,13 +94,20 @@ class App extends React.Component {
       this.setState({ threshold: event.target.value });
   }
 
-  handleCountryChange(event) {
-    const countries = [];
-    for (const el of event.target.selectedOptions) {
-      countries.push(el.value);
+  handleCountryChange = selectedOptions => {
+    if (selectedOptions) {
+      const countries = [];
+      for (const el of selectedOptions) {
+        countries.push(el.value);
+      }
+      this.setState({ selectedCountries: countries });
     }
-    this.setState({ selectedCountries: countries });
-  }
+  };
+
+  handleSubmit = e => {
+    e.preventDefault();
+    console.log(e);
+  };
 
   /**
    * Creates a form for Sellers Graph Type.
@@ -136,15 +147,13 @@ class App extends React.Component {
       <>
         <Form.Group controlId="country">
           <Form.Label>Country</Form.Label>
-          <Form.Control
-            as="select"
-            multiple
-            onChange={event => this.handleCountryChange(event)}
-          >
-            {countries.map(element => (
-              <option>{element}</option>
-            ))}
-          </Form.Control>
+          <Select
+            options={countries.map(element => {
+              return { value: element, label: element };
+            })}
+            isMulti
+            onChange={this.handleCountryChange}
+          />
         </Form.Group>
       </>
     );
@@ -158,15 +167,13 @@ class App extends React.Component {
       <>
         <Form.Group controlId="country">
           <Form.Label>Country</Form.Label>
-          <Form.Control
-            as="select"
-            multiple
-            onChange={event => this.handleCountryChange(event)}
-          >
-            {countries.map(element => (
-              <option>{element}</option>
-            ))}
-          </Form.Control>
+          <Select
+            options={countries.map(element => {
+              return { value: element, label: element };
+            })}
+            isMulti
+            onChange={this.handleCountryChange}
+          />
         </Form.Group>
       </>
     );
@@ -178,52 +185,55 @@ class App extends React.Component {
    */
   createView(formInputs) {
     const { chartTypes } = this;
+    const toastContainer = getToastContainer();
     const view = (
-      <Row>
-        <Col xs={3}>
-          <Form>
-            <Form.Group controlId="type">
-              <Form.Label>Graph type</Form.Label>
-              <Form.Control
-                as="select"
-                onChange={event => this.handleChartTypeChange(event)}
-              >
-                {chartTypes.map(element => (
-                  <option>{element}</option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-            {formInputs}
-            <Button onClick={() => this.handleButtonClick()}>Update</Button>
-          </Form>
-        </Col>
-        <Col>
-          <h2>Number of tanks in countries</h2>
-          <Bar
-            data={this.state.data}
-            width={10}
-            height={10}
-            options={{
-              maintainAspectRatio: true,
-              scales: {
-                xAxes: [
-                  {
-                    stacked: true
-                  }
-                ],
-                yAxes: [
-                  {
-                    stacked: true
-                  }
-                ]
-              },
-              colorschemes: {
-                scheme: Aspect6
-              }
-            }}
-          />
-        </Col>
-      </Row>
+      <>
+        <Row>
+          <Col xs={3}>
+            <Form onSubmit={event => this.handleSubmit(event)}>
+              <Form.Group controlId="type">
+                <Form.Label>Graph type</Form.Label>
+                <Form.Control
+                  as="select"
+                  onChange={event => this.handleChartTypeChange(event)}
+                >
+                  {chartTypes.map(element => (
+                    <option>{element}</option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+              {formInputs}
+              <Button onClick={() => this.handleButtonClick()}>Update</Button>
+            </Form>
+          </Col>
+          <Col>
+            <Bar
+              data={this.state.data}
+              width={10}
+              height={8}
+              options={{
+                maintainAspectRatio: true,
+                scales: {
+                  xAxes: [
+                    {
+                      stacked: true
+                    }
+                  ],
+                  yAxes: [
+                    {
+                      stacked: true
+                    }
+                  ]
+                },
+                colorschemes: {
+                  scheme: Aspect6
+                }
+              }}
+            />
+          </Col>
+        </Row>
+        {toastContainer}
+      </>
     );
     return view;
   }
