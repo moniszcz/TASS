@@ -63,7 +63,6 @@ def chart1_get():
     """
     tank_name = request.args.get("tank_name")
     threshold = int(request.args.get("threshold"))
-    print(f"tank_name: {tank_name}, threshold: {threshold}")
 
     session = Session()
 
@@ -105,7 +104,6 @@ def chart2_get():
     :rtype: Chart
     """
     country_names = request.args.getlist("country_names[]")
-    print(f"country_names: {country_names}")
 
     session = Session()
 
@@ -134,7 +132,6 @@ def chart2_get():
         if not tmp:
             tmp.append(0)
         quantity.append(reduce(lambda a, b: a + b, tmp))
-    # print(quantity)
 
     # tanks exported
     for c_id in country_ids:
@@ -146,7 +143,6 @@ def chart2_get():
         if not tmp:
             tmp.append(0)
         export_quantity.append(reduce(lambda a, b: a + b, tmp))
-    # print(export_quantity)
 
     session.close()
 
@@ -197,9 +193,6 @@ def chart3_get():
             tank_names.add(tank.name)
             country_tanks[country_name][tank.name] = tank.quantity
 
-    # print(country_tanks)
-    # print(tank_names)
-
     for tank_name in tank_names:
         output[tank_name] = []
 
@@ -210,8 +203,6 @@ def chart3_get():
             else:
                 output[tank_name].append(0)
 
-    # print(output)
-
     labels = country_names
     datasets = []
 
@@ -220,8 +211,6 @@ def chart3_get():
         datasets.append(row)
 
     chart = {"labels": labels, "datasets": datasets}
-
-    # print(chart)
 
     session.close()
 
@@ -250,9 +239,6 @@ def sellers_graph_get():
         k_core = int(k_core)
     alliance_only = request.args.get("alliance_only") == "true"
 
-    print(
-        f"country_name: {country_name}, k_core: {k_core}, alliance_only: {alliance_only}"
-    )
     session = Session()
     c_id = session.query(Country.id).filter_by(name=country_name).one()[0]
 
@@ -314,7 +300,6 @@ def sellers_graph_get():
     session.close()
 
     response = {"nodes": nodes, "links": links}
-    print(response)
     return jsonify(response)
 
 
@@ -397,10 +382,6 @@ def tank_graph_get():
             nodes.append({"id": key, "name": country_name})
 
     session.close()
-
-    print(
-        f"tank_name: {tank_name}, k_core: {k_core}, alliance_only: {alliance_only}"
-    )
 
     response = {"nodes": nodes, "links": links}
     return jsonify(response)
