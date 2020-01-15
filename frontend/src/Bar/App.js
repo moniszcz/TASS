@@ -10,6 +10,7 @@ import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
 import Select from 'react-select';
+import Spinner from 'react-bootstrap/Spinner';
 
 import downloadData from '../utils/Api';
 
@@ -31,6 +32,7 @@ class App extends React.Component {
 
     this.state = {
       data: {},
+      isLoading: false,
       chartType: this.chartTypes[0],
       tankType: '',
       threshold: 0,
@@ -61,6 +63,7 @@ class App extends React.Component {
   async handleButtonClick() {
     const { threshold, tankType, chartType, selectedCountries } = this.state;
 
+    this.setState({ isLoading: true });
     let data;
     if (chartType === this.chartTypes[0]) {
       const params = { tank_name: tankType, threshold };
@@ -72,6 +75,7 @@ class App extends React.Component {
       const params = { country_names: selectedCountries };
       data = await downloadData(config.API_ENDPOINTS.CHART3, params);
     }
+    this.setState({ isLoading: false });
     if (!data) {
       createNoDataToast();
     } else {
@@ -106,6 +110,26 @@ class App extends React.Component {
   handleSubmit = e => {
     e.preventDefault();
   };
+  getButton() {
+    const { isLoading } = this.state;
+
+    if (isLoading) {
+      return (
+        <Button onClick={() => this.handleButtonClick()}>
+          <Spinner
+            as="span"
+            animation="border"
+            size="sm"
+            role="status"
+            aria-hidden="true"
+          />
+          <span className="sr-only">Loading...</span>
+        </Button>
+      );
+    } else {
+      return <Button onClick={() => this.handleButtonClick()}>Update</Button>;
+    }
+  }
 
   /**
    * Creates a form for Sellers Graph Type.
@@ -184,6 +208,7 @@ class App extends React.Component {
   createView(formInputs) {
     const { chartTypes } = this;
     const toastContainer = getToastContainer();
+    const button = this.getButton();
     const view = (
       <>
         <Row>
@@ -201,7 +226,7 @@ class App extends React.Component {
                 </Form.Control>
               </Form.Group>
               {formInputs}
-              <Button onClick={() => this.handleButtonClick()}>Update</Button>
+              {button}
             </Form>
           </Col>
           <Col>
