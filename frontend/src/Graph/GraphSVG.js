@@ -42,6 +42,8 @@ class Graph extends React.Component {
     const margin = this.margin;
     const width = this.width;
     const height = this.height;
+    const xExtent = [50, width];
+    const yExtent = [50, height];
     const dataset = this.props.dataset;
 
     this.svg.selectAll('*').remove();
@@ -54,8 +56,11 @@ class Graph extends React.Component {
           return d.id;
         })
       )
-      .force('charge', d3.forceManyBody().strength(this.strength))
-      .force('center', d3.forceCenter(width / 2, height / 2));
+      .force('charge', d3.forceManyBody().strength(-1000))
+      .force('center', d3.forceCenter(width / 2, height / 2))
+      .force('x', d3.forceX(width / 2))
+      .force('y', d3.forceY(height / 2))
+      .force('bounds', boxingForce);
 
     // Initialize the links
     const link = this.svg
@@ -139,6 +144,17 @@ class Graph extends React.Component {
       if (!d3.event.active) simulation.alphaTarget(0);
       d.fx = null;
       d.fy = null;
+    }
+
+    // Custom force to put all nodes in a box
+    function boxingForce() {
+      const nodes = dataset.nodes;
+      for (let node of nodes) {
+        // Of the positions exceed the box, set them to the boundary position.
+        // You may want to include your nodes width to not overlap with the box.
+        node.x = Math.max(xExtent[0], Math.min(xExtent[1], node.x));
+        node.y = Math.max(yExtent[0], Math.min(yExtent[1], node.y));
+      }
     }
 
     // // Let's list the force we wanna apply on the network
