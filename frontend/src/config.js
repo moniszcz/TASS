@@ -1,7 +1,7 @@
 const config = {
   ENVDEV: window.location.href.match('localhost:3000') ? true : false,
   APIURL: 'http://127.0.0.1:5000',
-  APIREMOTEURL: 'http://offpics.pythonanywhere.com',
+  APIREMOTEURL: 'https://offpics.pythonanywhere.com',
   API_ENDPOINTS: {
     SELLERSGRAPH: 'sellersGraph',
     TANKGRAPH: 'tankGraph',
