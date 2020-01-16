@@ -215,7 +215,7 @@ class App extends React.Component {
           <Col xs={3}>
             <Form onSubmit={event => this.handleSubmit(event)}>
               <Form.Group controlId="type">
-                <Form.Label>Graph type</Form.Label>
+                <Form.Label>Chart type</Form.Label>
                 <Form.Control
                   as="select"
                   onChange={event => this.handleChartTypeChange(event)}
