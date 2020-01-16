@@ -263,39 +263,65 @@ def sellers_graph_get():
         links = edges
 
     if alliance_only:
-        query_alliance = session.query(Alliance).filter_by(country1_id=c_id)
+        query_alliance = session.query(Alliance).all()
         all_sellers = [
-            {"source": c_id, "target": instance.country2_id}
+            {"source": instance.country1_id, "target": instance.country2_id}
             for instance in query_alliance
         ]
-        all_sellers_graph = [
-            (c_id, instance.country2_id) for instance in query_alliance
-        ]
 
-        alliance_sellers = [d for d in edges if d in all_sellers]
+        alliance_sellers = []
+        for i in range(len(ids_lst)):
+            for j in range(i + 1, len(ids_lst)):
+                alliance_sellers.append(
+                    {"source": ids_lst[i], "target": ids_lst[j]}
+                )
 
-        alliance_sellers_graph = list(
-            set(edges_graph).intersection(all_sellers_graph)
-        )
+        links = [d for d in alliance_sellers if d in all_sellers]
 
-        G = nx.Graph()
-        G.add_edges_from(alliance_sellers_graph)
-        G.to_undirected()
-        G1 = nx.k_core(G, k=k_core)
-        g = nx.to_dict_of_lists(G1)
+        ids = []
 
-        links = []
-        for val in g.values():
-            for i in range(len(val)):
-                if val[i] != c_id:
-                    links.append({"source": c_id, "target": val[i]})
+        for i in range(len(links)):
+            for key, val in links[i].items():
+                ids.append(val)
+        ids_unique = sorted(set(ids))
 
         nodes = []
-        for key in g.keys():
-            country_name = (
-                session.query(Country.name).filter_by(id=key).one()[0]
-            )
-            nodes.append({"id": key, "name": country_name})
+        for i in ids_unique:
+            country_n = session.query(Country.name).filter_by(id=i).one()[0]
+            nodes.append({"id": i, "name": country_n})
+        # query_alliance = session.query(Alliance).filter_by(country1_id=c_id)
+        # all_sellers = [
+        #     {"source": c_id, "target": instance.country2_id}
+        #     for instance in query_alliance
+        # ]
+        # all_sellers_graph = [
+        #     (c_id, instance.country2_id) for instance in query_alliance
+        # ]
+
+        # alliance_sellers = [d for d in edges if d in all_sellers]
+
+        # alliance_sellers_graph = list(
+        #     set(edges_graph).intersection(all_sellers_graph)
+        # )
+
+        # G = nx.Graph()
+        # G.add_edges_from(alliance_sellers_graph)
+        # G.to_undirected()
+        # G1 = nx.k_core(G, k=k_core)
+        # g = nx.to_dict_of_lists(G1)
+
+        # links = []
+        # for val in g.values():
+        #     for i in range(len(val)):
+        #         if val[i] != c_id:
+        #             links.append({"source": c_id, "target": val[i]})
+
+        # nodes = []
+        # for key in g.keys():
+        #     country_name = (
+        #         session.query(Country.name).filter_by(id=key).one()[0]
+        #     )
+        #     nodes.append({"id": key, "name": country_name})
 
     session.close()
 
