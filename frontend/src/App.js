@@ -2,13 +2,21 @@ import React from 'react';
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 
+import Home from './Home';
+
 import { default as GraphView } from './Graph/App';
 import { default as BarChart } from './Bar/App';
+
+import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Container from 'react-bootstrap/Container';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
+import Navbar from 'react-bootstrap/Navbar';
+import Nav from 'react-bootstrap/Nav';
+import NavDropdown from 'react-bootstrap/NavDropdown';
+import { LinkContainer } from 'react-router-bootstrap';
 
 import downloadData from './utils/Api';
 import config from './config';
@@ -50,40 +58,46 @@ class App extends React.Component {
     const toastContainer = getToastContainer();
 
     return (
-      <div className="App">
-        <Container>
-          <Row>
-            <Col>
-              <Row className="navigationbar">
-                <Col
-                  className={selectedOption === 'graph' ? 'selected' : ''}
-                  onClick={() => this.setSelectedOption('graph')}
-                >
-                  <span>Graph</span>
-                </Col>
-                <Col
-                  className={selectedOption !== 'graph' ? 'selected' : ''}
-                  onClick={() => this.setSelectedOption('barChart')}
-                >
-                  <span>Bar Chart</span>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-
-          <Chart type={selectedOption} state={this.state}></Chart>
-        </Container>
-      </div>
+      <Router>
+        <div className="App">
+          <Navbar bg="light" expand="lg">
+            <LinkContainer to="/">
+              <Navbar.Brand>React-Bootstrap</Navbar.Brand>
+            </LinkContainer>
+            <Navbar.Toggle aria-controls="basic-navbar-nav" />
+            <Navbar.Collapse id="basic-navbar-nav">
+              <Nav className="mr-auto">
+                <LinkContainer to="/graphs">
+                  <Nav.Link>Graphs</Nav.Link>
+                </LinkContainer>
+                <LinkContainer to="/bars">
+                  <Nav.Link>Bar Charts</Nav.Link>
+                </LinkContainer>
+              </Nav>
+            </Navbar.Collapse>
+          </Navbar>
+          <Container>
+            <Switch>
+              <Route path="/graphs">
+                <GraphView
+                  tankTypes={this.state.tankTypes}
+                  countries={this.state.countries}
+                ></GraphView>
+              </Route>
+              <Route path="/bars">
+                <BarChart
+                  tankTypes={this.state.tankTypes}
+                  countries={this.state.countries}
+                ></BarChart>
+              </Route>
+              <Route path="/">
+                <Home />
+              </Route>
+            </Switch>
+          </Container>
+        </div>
+      </Router>
     );
-  }
-}
-
-function Chart(props) {
-  const { tankTypes, countries } = props.state;
-  if (props.type === 'graph') {
-    return <GraphView tankTypes={tankTypes} countries={countries}></GraphView>;
-  } else {
-    return <BarChart tankTypes={tankTypes} countries={countries}></BarChart>;
   }
 }
 
