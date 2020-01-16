@@ -10,7 +10,7 @@ class Graph extends React.Component {
     this.ref = React.createRef();
     this.margin = { top: 10, right: 30, bottom: 30, left: 40 };
     this.width = 800 - this.margin.left - this.margin.right;
-    this.height = 800 - this.margin.top - this.margin.bottom;
+    this.height = 600 - this.margin.top - this.margin.bottom;
     this.previousDataset = null;
     this.strength = -30;
   }
@@ -39,7 +39,6 @@ class Graph extends React.Component {
   }
 
   drawGraph() {
-    const margin = this.margin;
     const width = this.width;
     const height = this.height;
     const xExtent = [50, width];
@@ -88,15 +87,16 @@ class Graph extends React.Component {
           .on('end', dragended)
       );
 
-    const circles = node
+    node
       .append('circle')
       .attr('r', 5)
       .style('fill', d => {
         if (d.name === this.props.target) return 'red';
-        else return '#69b3a2';
+        else return '#428bca';
+        // else return '#69b3a2';
       });
 
-    const labels = node
+    node
       .append('text')
       .text(d => d.name)
       .attr('x', 6)

@@ -1,7 +1,5 @@
 import React from 'react';
 import Image from 'react-bootstrap/Image';
-import { LinkContainer } from 'react-router-bootstrap';
-import Button from 'react-bootstrap/Button';
 
 class Home extends React.Component {
   render() {

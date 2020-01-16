@@ -28,7 +28,6 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    console.log('mount');
     if (this.state.tankType === '' && this.props.tankTypes) {
       this.setState({ tankType: this.props.tankTypes[0] });
     }
@@ -156,8 +155,8 @@ class App extends React.Component {
                   as="select"
                   onChange={event => this.handleGraphTypeChange(event)}
                 >
-                  {graphTypes.map(element => (
-                    <option>{element}</option>
+                  {graphTypes.map((element, i) => (
+                    <option key={i}>{element}</option>
                   ))}
                 </Form.Control>
               </Form.Group>
@@ -180,7 +179,6 @@ class App extends React.Component {
    */
   getSellersForm() {
     const { countries } = this.props;
-    const { tankTypes } = this.props;
     const form = (
       <>
         <Form.Group controlId="type">
@@ -190,8 +188,8 @@ class App extends React.Component {
             value={this.state.selectedCountry}
             onChange={event => this.handleCountryChange(event)}
           >
-            {countries.map(element => (
-              <option>{element}</option>
+            {countries.map((element, i) => (
+              <option key={i}>{element}</option>
             ))}
           </Form.Control>
         </Form.Group>
@@ -221,8 +219,8 @@ class App extends React.Component {
             as="select"
             onChange={event => this.handleTankTypeChange(event)}
           >
-            {tankTypes.map(element => (
-              <option>{element}</option>
+            {tankTypes.map((element, i) => (
+              <option key={i}>{element}</option>
             ))}
           </Form.Control>
         </Form.Group>
@@ -258,8 +256,8 @@ class App extends React.Component {
             as="select"
             onChange={event => this.handleTankTypeChange(event)}
           >
-            {tankTypes.map(element => (
-              <option>{element}</option>
+            {tankTypes.map((element, i) => (
+              <option key={i}>{element}</option>
             ))}
           </Form.Control>
         </Form.Group>

@@ -7,15 +7,12 @@ import Home from './Home';
 import { default as GraphView } from './Graph/App';
 import { default as BarChart } from './Bar/App';
 
-import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Container from 'react-bootstrap/Container';
-import Col from 'react-bootstrap/Col';
-import Row from 'react-bootstrap/Row';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
-import NavDropdown from 'react-bootstrap/NavDropdown';
 import { LinkContainer } from 'react-router-bootstrap';
 
 import downloadData from './utils/Api';
@@ -31,7 +28,6 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedOption: 'graph',
       tankTypes: [],
       countries: []
     };
@@ -49,12 +45,7 @@ class App extends React.Component {
     this.setState({ tankTypes, countries });
   }
 
-  setSelectedOption(selectedOption) {
-    this.setState({ selectedOption });
-  }
-
   render() {
-    const { selectedOption } = this.state;
     const toastContainer = getToastContainer();
 
     return (
@@ -76,6 +67,7 @@ class App extends React.Component {
               </Nav>
             </Navbar.Collapse>
           </Navbar>
+          {toastContainer}
           <Container>
             <Switch>
               <Route path="/graphs">

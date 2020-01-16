@@ -28,6 +28,13 @@ class App extends React.Component {
       }
     });
 
+    Chart.defaults.global.plugins.colorschemes = {
+      scheme: 'office.Blue6',
+      fillAlpha: 0.5,
+      reverse: false,
+      override: false
+    };
+
     this.chartTypes = ['Owned Tanks', 'Owned/Exported Tanks', 'Types of Tanks'];
 
     this.state = {
@@ -144,8 +151,8 @@ class App extends React.Component {
             as="select"
             onChange={event => this.handleTankTypeChange(event)}
           >
-            {tankTypes.map(element => (
-              <option>{element}</option>
+            {tankTypes.map((element, i) => (
+              <option key={i}>{element}</option>
             ))}
           </Form.Control>
         </Form.Group>
@@ -220,8 +227,8 @@ class App extends React.Component {
                   as="select"
                   onChange={event => this.handleChartTypeChange(event)}
                 >
-                  {chartTypes.map(element => (
-                    <option>{element}</option>
+                  {chartTypes.map((element, i) => (
+                    <option key={i}>{element}</option>
                   ))}
                 </Form.Control>
               </Form.Group>
