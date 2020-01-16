@@ -16,7 +16,7 @@ Base = declarative_base()
 app = Flask(__name__.split(".")[0])
 CORS(app)
 
-engine = db.create_engine("sqlite:///main.db")
+engine = db.create_engine("sqlite:///mysite/main.db")
 Session = sessionmaker(bind=engine)
 
 
