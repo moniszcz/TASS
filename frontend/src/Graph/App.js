@@ -63,7 +63,8 @@ class App extends React.Component {
 
     if (graphType === 'Sellers') {
       const params = {
-        country_name: selectedCountry
+        country_name: selectedCountry,
+        alliance_only: allianceOnly
       };
       this.setState({ isLoading: true });
       dataset = await downloadData(config.API_ENDPOINTS.SELLERSGRAPH, params);
@@ -179,7 +180,7 @@ class App extends React.Component {
   getSellersForm() {
     const { countries } = this.props;
     const { tankTypes } = this.props;
-    const formWithAllianceOnly = (
+    const form = (
       <>
         <Form.Group controlId="type">
           <Form.Label>Country</Form.Label>
@@ -192,25 +193,17 @@ class App extends React.Component {
             ))}
           </Form.Control>
         </Form.Group>
-      </>
-    );
-    const formWithoutAllianceOnly = (
-      <>
-        <Form.Group controlId="type">
-          <Form.Label>Country</Form.Label>
-          <Form.Control
-            as="select"
-            onChange={event => this.handleCountryChange(event)}
-          >
-            {countries.map(element => (
-              <option>{element}</option>
-            ))}
-          </Form.Control>
+        <Form.Group controlId="formBasicCheckbox">
+          <Form.Check
+            type="checkbox"
+            label="Alliance only"
+            checked={this.state.allianceOnly}
+            onChange={event => this.handleAllianceOnlyChange(event)}
+          />
         </Form.Group>
       </>
     );
-    if (this.state.allianceOnly) return formWithAllianceOnly;
-    else return formWithoutAllianceOnly;
+    return form;
   }
 
   /**
