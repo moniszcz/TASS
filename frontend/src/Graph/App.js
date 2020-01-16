@@ -20,18 +20,19 @@ class App extends React.Component {
       dataset: null,
       graphType: this.graphTypes[0],
       kCore: 0,
-      tankType: '',
+      tankType: 'AMX-13',
       counter: 0,
-      selectedCountry: '',
+      selectedCountry: 'Afghanistan',
       allianceOnly: false
     };
   }
 
-  componentDidUpdate() {
-    if (!this.state.tankType && this.props.tankTypes) {
+  componentDidMount() {
+    console.log('mount');
+    if (this.state.tankType === '' && this.props.tankTypes) {
       this.setState({ tankType: this.props.tankTypes[0] });
     }
-    if (!this.state.selectedCountry && this.props.countries) {
+    if (this.state.selectedCountry === '' && this.props.countries) {
       this.setState({ selectedCountry: this.props.countries[0] });
     }
   }
@@ -186,6 +187,7 @@ class App extends React.Component {
           <Form.Label>Country</Form.Label>
           <Form.Control
             as="select"
+            value={this.state.selectedCountry}
             onChange={event => this.handleCountryChange(event)}
           >
             {countries.map(element => (
