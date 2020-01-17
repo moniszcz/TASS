@@ -55,7 +55,9 @@ def return_sellers():
 
     session.close()
 
-    return jsonify(response)
+    print(response)
+
+    return jsonify({"sellers": response})
 
 
 @app.route("/chart1")
@@ -111,7 +113,7 @@ def chart2_get():
     """?????? Wykres wielkości produkcji ??????
     TODO: Make country names a list.
 
-    Kolejnym interesującym scenariuszem użycia aplikacji byłby wykres prezentujący ilości wyprodukowanych czołgów oraz ich eksport 
+    Kolejnym interesującym scenariuszem użycia aplikacji byłby wykres prezentujący ilości wyprodukowanych czołgów oraz ich eksport
     przez kraje wybrane przez użytkownika
 
     :param country_names:
@@ -182,7 +184,7 @@ def chart3_get():
     """?????? Wykres posiadanych czołgów ??????
     TODO: Make country names a list.
 
-    Użytkownik będzie miał możliwość wyboru z dropdownu kilku krajów dla których chce przeprowadzić porównanie, 
+    Użytkownik będzie miał możliwość wyboru z dropdownu kilku krajów dla których chce przeprowadzić porównanie,
     a następnie wykreślić na wykresie informacje o ilości i typach posiadanych czołgów
 
     :param country_name:
@@ -237,7 +239,7 @@ def chart3_get():
 def sellers_graph_get():
     """Graf powiązań producentów z krajami kupującymi
 
-    Graf przedstawiający powiązania producentów z krajami do których eksportowane są ich czołgi. 
+    Graf przedstawiający powiązania producentów z krajami do których eksportowane są ich czołgi.
     Dodatkowo przewidziana opcja ograniczenia do krajów będących w sojuszu.
 
     :param country_name:
