@@ -252,10 +252,6 @@ def sellers_graph_get():
     :rtype: Graph
     """
     country_name = request.args.get("country_name")
-    k_core = request.args.get("k_core")
-    if k_core:
-        k_core = int(k_core)
-    alliance_only = request.args.get("alliance_only") == "true"
 
     session = Session()
     c_id = session.query(Country.id).filter_by(name=country_name).one()[0]
@@ -266,47 +262,23 @@ def sellers_graph_get():
     ids_lst.append(c_id)
     ids_lst = sorted(set(ids_lst))
 
-    edges = [
+    query_alliance = session.query(Alliance).filter_by(country1_id=c_id)
+    all_sellers = [instance.country2_id for instance in query_alliance]
+    alliance_sellers = sorted(set(all_sellers))
+
+    intersect = sorted(set(alliance_sellers).intersection(ids_lst))
+
+    nodes = []
+    for i in ids_lst:
+        country_n = session.query(Country.name).filter_by(id=i).one()[0]
+        if i in alliance_sellers:
+            nodes.append({"id": i, "name": country_n, "alliance": True})
+        else:
+            nodes.append({"id": i, "name": country_n, "alliance": False})
+
+    links = [
         {"source": c_id, "target": ids_lst[i]} for i in range(len(ids_lst))
     ]
-
-    edges_graph = [(c_id, ids_lst[i]) for i in range(len(ids_lst))]
-
-    if not alliance_only:
-        nodes = []
-        for i in ids_lst:
-            country_n = session.query(Country.name).filter_by(id=i).one()[0]
-            nodes.append({"id": i, "name": country_n})
-
-        links = edges
-
-    if alliance_only:
-        query_alliance = session.query(Alliance).all()
-        all_sellers = [
-            {"source": instance.country1_id, "target": instance.country2_id}
-            for instance in query_alliance
-        ]
-
-        alliance_sellers = []
-        for i in range(len(ids_lst)):
-            for j in range(i + 1, len(ids_lst)):
-                alliance_sellers.append(
-                    {"source": ids_lst[i], "target": ids_lst[j]}
-                )
-
-        links = [d for d in alliance_sellers if d in all_sellers]
-
-        ids = []
-
-        for i in range(len(links)):
-            for key, val in links[i].items():
-                ids.append(val)
-        ids_unique = sorted(set(ids))
-
-        nodes = []
-        for i in ids_unique:
-            country_n = session.query(Country.name).filter_by(id=i).one()[0]
-            nodes.append({"id": i, "name": country_n})
 
     session.close()
 
