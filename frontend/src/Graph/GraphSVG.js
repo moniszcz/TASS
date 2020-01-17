@@ -92,6 +92,7 @@ class Graph extends React.Component {
       .attr('r', 5)
       .style('fill', d => {
         if (d.name === this.props.target) return 'red';
+        else if (d.alliance) return 'green';
         else return '#428bca';
         // else return '#69b3a2';
       });

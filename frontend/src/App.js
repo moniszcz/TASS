@@ -46,7 +46,6 @@ class App extends React.Component {
     const { tankTypes } = response[0];
     const { countries } = response[1];
     const { sellers } = response[2];
-    console.log(sellers);
     this.setState({ tankTypes, countries, sellers });
   }
 
