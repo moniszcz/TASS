@@ -42,6 +42,22 @@ def return_countries():
     return jsonify({"countries": response})
 
 
+@app.route("/sellersCountries")
+def return_sellers():
+    session = Session()
+
+    response = [
+        instance.name
+        for instance in session.query(Country)
+        .filter(Country.origin.any())
+        .all()
+    ]
+
+    session.close()
+
+    return jsonify(response)
+
+
 @app.route("/chart1")
 def chart1_get():
     """Wykreślenie krajów, które posiadają dany typ czołgu
