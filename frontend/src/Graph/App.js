@@ -63,8 +63,7 @@ class App extends React.Component {
 
     if (graphType === 'Sellers') {
       const params = {
-        country_name: selectedCountry,
-        alliance_only: allianceOnly
+        country_name: selectedCountry
       };
       this.setState({ isLoading: true });
       dataset = await downloadData(config.API_ENDPOINTS.SELLERSGRAPH, params);
@@ -192,14 +191,6 @@ class App extends React.Component {
               <option key={i}>{element}</option>
             ))}
           </Form.Control>
-        </Form.Group>
-        <Form.Group controlId="formBasicCheckbox">
-          <Form.Check
-            type="checkbox"
-            label="Alliance only"
-            checked={this.state.allianceOnly}
-            onChange={event => this.handleAllianceOnlyChange(event)}
-          />
         </Form.Group>
       </>
     );
