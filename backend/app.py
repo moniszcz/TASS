@@ -370,6 +370,60 @@ def tank_graph_get():
     return jsonify(response)
 
 
+@app.route("/allianceGraph")
+def alliance_graph_get():
+    country_names = request.args.getlist("country_names[]")
+    import itertools
+
+    session = Session()
+    # list of countries ids
+    ids_lst = []
+
+    for country_name in country_names:
+        country_id = (
+            session.query(Country.id).filter_by(name=country_name).one()[0]
+        )
+        ids_lst.append(country_id)
+    print(ids_lst)
+
+    countries = []
+    for c_id in ids_lst:
+        alliances = session.query(Alliance.country2_id).filter_by(
+            country1_id=c_id
+        )
+        for alliance in alliances:
+            countries.append(alliance[0])
+
+    countries_all = []
+    for item in itertools.chain(countries, ids_lst):
+        countries_all.append(item)
+
+    countries_alliance = sorted(set(countries_all))
+
+    nodes = []
+    for i in countries_alliance:
+        country_n = session.query(Country.name).filter_by(id=i).one()[0]
+        if i in ids_lst:
+            nodes.append({"id": i, "name": country_n, "input": True})
+        else:
+            nodes.append({"id": i, "name": country_n})
+
+    print(nodes)
+    links = []
+    for (i, c_id) in enumerate(ids_lst):
+        alliance_query = session.query(Alliance.country2_id).filter_by(
+            country1_id=c_id
+        )
+        for instance in alliance_query:
+            links.append({"source": c_id, "target": instance[0], "group": i})
+    print(links)
+
+    session.close()
+
+    response = {"nodes": nodes, "links": links}
+    return jsonify(response)
+
+
 class Tank(Base):
     __tablename__ = "tanks"
 
