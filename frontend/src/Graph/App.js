@@ -9,12 +9,13 @@ import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
 import Spinner from 'react-bootstrap/Spinner';
+import Select from 'react-select';
 import { getToastContainer, createNoDataToast } from '../utils/Toast';
 
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.graphTypes = ['Sellers', 'Tank'];
+    this.graphTypes = ['Sellers', 'Tank', 'Alliance'];
     this.state = {
       isLoading: false,
       dataset: null,
@@ -23,7 +24,8 @@ class App extends React.Component {
       tankType: 'AMX-13',
       counter: 0,
       selectedCountry: 'Afghanistan',
-      allianceOnly: false
+      allianceOnly: false,
+      selectedCountries: []
     };
   }
 
@@ -43,8 +45,12 @@ class App extends React.Component {
       const form = this.getSellersForm();
       const view = this.createView(form);
       return view;
-    } else {
+    } else if (graphType === 'Tank') {
       const form = this.getTankForm();
+      const view = this.createView(form);
+      return view;
+    } else {
+      const form = this.getAllianceForm();
       const view = this.createView(form);
       return view;
     }
@@ -56,28 +62,32 @@ class App extends React.Component {
       tankType,
       graphType,
       selectedCountry,
-      allianceOnly
+      allianceOnly,
+      selectedCountries
     } = this.state;
 
     let dataset;
 
+    this.setState({ isLoading: true });
     if (graphType === 'Sellers') {
       const params = {
         country_name: selectedCountry
       };
-      this.setState({ isLoading: true });
       dataset = await downloadData(config.API_ENDPOINTS.SELLERSGRAPH, params);
-      this.setState({ isLoading: false });
-    } else {
+    } else if (graphType === 'Tank') {
       const params = {
         k_core: kCore,
         tank_name: tankType,
         alliance_only: allianceOnly
       };
-      this.setState({ isLoading: true });
       dataset = await downloadData(config.API_ENDPOINTS.TANKGRAPH, params);
-      this.setState({ isLoading: false });
+    } else {
+      const params = {
+        country_names: selectedCountries
+      };
+      dataset = await downloadData(config.API_ENDPOINTS.ALLIANCEGRAPH, params);
     }
+    this.setState({ isLoading: false });
 
     if (!dataset || dataset.nodes.length === 0) {
       createNoDataToast();
@@ -106,6 +116,16 @@ class App extends React.Component {
   handleCountryChange(event) {
     this.setState({ selectedCountry: event.target.value });
   }
+
+  handleCountriesChange = selectedOptions => {
+    if (selectedOptions) {
+      const countries = [];
+      for (const el of selectedOptions) {
+        countries.push(el.value);
+      }
+      this.setState({ selectedCountries: countries });
+    }
+  };
 
   getButton() {
     const { isLoading } = this.state;
@@ -265,6 +285,26 @@ class App extends React.Component {
 
     if (this.state.allianceOnly) return formWithAllianceOnly;
     else return formWithoutAllianceOnly;
+  }
+
+  getAllianceForm() {
+    const { countries } = this.props;
+    const form = (
+      <>
+        <Form.Group controlId="country">
+          <Form.Label>Country</Form.Label>
+          <Select
+            options={countries.map(element => {
+              return { value: element, label: element };
+            })}
+            isMulti
+            onChange={this.handleCountriesChange}
+          />
+        </Form.Group>
+      </>
+    );
+
+    return form;
   }
 }
 

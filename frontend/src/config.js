@@ -5,6 +5,7 @@ const config = {
   API_ENDPOINTS: {
     SELLERSGRAPH: 'sellersGraph',
     TANKGRAPH: 'tankGraph',
+    ALLIANCEGRAPH: 'allianceGraph',
     CHART1: 'chart1',
     CHART2: 'chart2',
     CHART3: 'chart3',
