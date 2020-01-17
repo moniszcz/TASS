@@ -23,7 +23,7 @@ class App extends React.Component {
       kCore: 0,
       tankType: 'AMX-13',
       counter: 0,
-      selectedCountry: 'Afghanistan',
+      selectedCountry: 'Argentina',
       allianceOnly: false,
       selectedCountries: []
     };
@@ -33,8 +33,8 @@ class App extends React.Component {
     if (this.state.tankType === '' && this.props.tankTypes) {
       this.setState({ tankType: this.props.tankTypes[0] });
     }
-    if (this.state.selectedCountry === '' && this.props.countries) {
-      this.setState({ selectedCountry: this.props.countries[0] });
+    if (this.state.selectedCountry === '' && this.props.sellers) {
+      this.setState({ selectedCountry: this.props.sellers[0] });
     }
   }
 
@@ -197,7 +197,7 @@ class App extends React.Component {
    * Creates a form for Sellers Graph Type.
    */
   getSellersForm() {
-    const { countries } = this.props;
+    const { sellers } = this.props;
     const form = (
       <>
         <Form.Group controlId="type">
@@ -207,7 +207,7 @@ class App extends React.Component {
             value={this.state.selectedCountry}
             onChange={event => this.handleCountryChange(event)}
           >
-            {countries.map((element, i) => (
+            {sellers.map((element, i) => (
               <option key={i}>{element}</option>
             ))}
           </Form.Control>

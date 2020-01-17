@@ -10,7 +10,8 @@ const config = {
     CHART2: 'chart2',
     CHART3: 'chart3',
     TANKTYPES: 'tankTypes',
-    COUNTRIES: 'countries'
+    COUNTRIES: 'countries',
+    SELLERS: 'sellersCountries'
   }
 };
 
