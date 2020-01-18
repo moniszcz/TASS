@@ -25,7 +25,8 @@ class App extends React.Component {
       counter: 0,
       selectedCountry: 'Argentina',
       allianceOnly: false,
-      selectedCountries: []
+      selectedCountries: [],
+      kCoreOption: false
     };
   }
 
@@ -59,6 +60,7 @@ class App extends React.Component {
   async handleButtonClick() {
     const {
       kCore,
+      kCoreOption,
       tankType,
       graphType,
       selectedCountry,
@@ -84,7 +86,8 @@ class App extends React.Component {
     } else {
       const params = {
         country_names: selectedCountries,
-        k_core: kCore
+        k_core: kCore,
+        k_core_option: kCoreOption
       };
       dataset = await downloadData(config.API_ENDPOINTS.ALLIANCEGRAPH, params);
     }
@@ -112,6 +115,9 @@ class App extends React.Component {
   }
   handleAllianceOnlyChange(event) {
     this.setState({ allianceOnly: event.target.checked });
+  }
+  handleKcoreOptionChange(event) {
+    this.setState({ kCoreOption: event.target.checked });
   }
 
   handleCountryChange(event) {
@@ -295,7 +301,7 @@ class App extends React.Component {
 
   getAllianceForm() {
     const { countries } = this.props;
-    const form = (
+    const formWithKcore = (
       <>
         <Form.Group controlId="country">
           <Form.Label>Country</Form.Label>
@@ -321,10 +327,41 @@ class App extends React.Component {
             }}
           ></Form.Control>
         </Form.Group>
+        <Form.Group controlId="formBasicCheckbox">
+          <Form.Check
+            type="checkbox"
+            label="K-core"
+            checked={this.state.kCoreOption}
+            onChange={event => this.handleKcoreOptionChange(event)}
+          />
+        </Form.Group>
+      </>
+    );
+    const formWithoutKcore = (
+      <>
+        <Form.Group controlId="country">
+          <Form.Label>Country</Form.Label>
+          <Select
+            options={countries.map(element => {
+              return { value: element, label: element };
+            })}
+            isMulti
+            onChange={this.handleCountriesChange}
+          />
+        </Form.Group>
+        <Form.Group controlId="formBasicCheckbox">
+          <Form.Check
+            type="checkbox"
+            label="K-core"
+            checked={this.state.kCoreOption}
+            onChange={event => this.handleKcoreOptionChange(event)}
+          />
+        </Form.Group>
       </>
     );
 
-    return form;
+    if (this.state.kCoreOption) return formWithKcore;
+    else return formWithoutKcore;
   }
 }
 
