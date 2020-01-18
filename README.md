@@ -1,2 +1,2 @@
 # TASS
-(Tankify)[https://tankify.netlify.com]
+https://tankify.netlify.com
