@@ -35,7 +35,7 @@ class App extends React.Component {
       override: false
     };
 
-    this.chartTypes = ['Owned Tanks', 'Owned/Exported Tanks', 'Types of Tanks'];
+    this.chartTypes = ['Owned Tanks', 'Owned/Produced Tanks', 'Types of Tanks'];
 
     this.state = {
       data: {},

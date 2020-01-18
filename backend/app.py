@@ -167,7 +167,7 @@ def chart2_get():
         "datasets": [
             {"label": "Number of tanks", "borderWidth": 2, "data": quantity},
             {
-                "label": "Number of exported tanks",
+                "label": "Number of produced tanks",
                 "borderWidth": 2,
                 "data": export_quantity,
             },
