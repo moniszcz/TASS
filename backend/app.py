@@ -165,7 +165,11 @@ def chart2_get():
     chart = {
         "labels": country_names,
         "datasets": [
-            {"label": "Number of owned tanks", "borderWidth": 2, "data": quantity},
+            {
+                "label": "Number of owned tanks",
+                "borderWidth": 2,
+                "data": quantity,
+            },
             {
                 "label": "Number of produced tanks",
                 "borderWidth": 2,
@@ -447,6 +451,23 @@ def alliance_graph_get():
                 nodes.append({"id": key, "name": country_name, "input": True})
             else:
                 nodes.append({"id": key, "name": country_name})
+
+        if k_core == 0:
+            for country_id in ids_lst:
+                is_country_in_list = False
+                for node in nodes:
+                    if node["id"] == country_id:
+                        is_country_in_list = True
+                        break
+                if not is_country_in_list:
+                    country_name = (
+                        session.query(Country.name)
+                        .filter_by(id=country_id)
+                        .one()[0]
+                    )
+                    nodes.append(
+                        {"id": country_id, "name": country_name, "input": True}
+                    )
 
     session.close()
 
