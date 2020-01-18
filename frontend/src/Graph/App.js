@@ -83,7 +83,8 @@ class App extends React.Component {
       dataset = await downloadData(config.API_ENDPOINTS.TANKGRAPH, params);
     } else {
       const params = {
-        country_names: selectedCountries
+        country_names: selectedCountries,
+        k_core: kCore
       };
       dataset = await downloadData(config.API_ENDPOINTS.ALLIANCEGRAPH, params);
     }
@@ -305,6 +306,20 @@ class App extends React.Component {
             isMulti
             onChange={this.handleCountriesChange}
           />
+        </Form.Group>
+        <Form.Group controlId="k-core">
+          <Form.Label>K-core</Form.Label>
+          <Form.Control
+            type="text"
+            value={this.state.kCore}
+            onChange={event => this.handleKcoreChange(event)}
+            onKeyPress={event => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                this.handleButtonClick();
+              }
+            }}
+          ></Form.Control>
         </Form.Group>
       </>
     );
