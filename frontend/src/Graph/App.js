@@ -127,6 +127,11 @@ class App extends React.Component {
     }
   };
 
+  handleSubmit = e => {
+    e.preventDefault();
+    this.handleButtonClick();
+  };
+
   getButton() {
     const { isLoading } = this.state;
 
@@ -167,7 +172,7 @@ class App extends React.Component {
       <>
         <Row>
           <Col xs={3}>
-            <Form>
+            <Form onSubmit={event => this.handleSubmit(event)}>
               <Form.Group controlId="type">
                 <Form.Label>Graph type</Form.Label>
                 <Form.Control

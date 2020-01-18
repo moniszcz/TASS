@@ -116,6 +116,7 @@ class App extends React.Component {
 
   handleSubmit = e => {
     e.preventDefault();
+    this.handleButtonClick();
   };
   getButton() {
     const { isLoading } = this.state;
