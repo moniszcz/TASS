@@ -165,7 +165,7 @@ def chart2_get():
     chart = {
         "labels": country_names,
         "datasets": [
-            {"label": "Number of tanks", "borderWidth": 2, "data": quantity},
+            {"label": "Number of owned tanks", "borderWidth": 2, "data": quantity},
             {
                 "label": "Number of produced tanks",
                 "borderWidth": 2,
