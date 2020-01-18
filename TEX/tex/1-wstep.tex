@@ -10,10 +10,11 @@ Link do repozytorium: \url{https://github.com/moniszcz/TASS}
     \label{fig:landing_page}
 \end{figure}
 \section{Opis aplikacji}
-Niezbędne obliczenia na backendzie zostały wykonane przy wykorzystaniu języka programowania \textbf{Python 3.7}, a prezentacja uzyskanych w ten sposób wyników na frotendzie została stworzona przy pomocy technologii \textbf{HTML, CSS, Javascript ES6}. Zebrane dane są przechowywane w bazie danych \textbf{SQLite}, a zapytania są wykonywane przy wykorzystaniu pakietu \textbf{SQL Alchemy}.
+Tankify zostało napisane w formie aplikacji internetowej.
+Niezbędne obliczenia wykonywane są na backendzie przy wykorzystaniu języka programowania \textbf{Python 3.7}, a prezentacja uzyskanych w ten sposób wyników na frontendzie została stworzona przy pomocy technologii \textbf{HTML, CSS, Javascript}. Zebrane dane są przechowywane w bazie danych \textbf{SQLite}, a zapytania są wykonywane przy wykorzystaniu pakietu \textbf{SQL Alchemy}.
 \newpage
 \subsection{Biblioteki}
-Wszystkie wykorzystane biblioteki są zgodne z MPV 2.0 z koncepcji projektu.
+Wszystkie wykorzystane biblioteki są zgodne z koncepcji projektu.
  \begin{longtable}{| m{0.2\linewidth} |  m{0.6\linewidth} |} 
      \caption{Biblioteki.} \\ 
      \hline
@@ -40,7 +41,7 @@ Informacje na oryginalnej stronie były zawarte w tabelach uporządkowanych alfa
     \item niewystarczająca ilość danych dla części krajów (brak szacowanej liczby pojazdów bojowych, skrótowe dane zawarte w formie jednej kolumny),
     \item brak ciągłości zapisu nazw typów czołgów, na przykład używane zamiennie "MBT-2000" \ oraz "MBT 2000". \\
 \end{itemize}
-\indent W celu przygotowania danych do analizy, zostały zastosowane wyrażenia regularne na kolumnie \textit{Quantity}.\\
+\indent W celu przygotowania danych do analizy, wartości kolumny \textit{Quantity} zostały przefiltrowane przy pomocy wyrażeń regularnych.\\
 Typy czołgów zostały częściowo zagregowane do bardziej ogólnych nazw, z pominięciem modeli. Ten zabieg został wykonany wyłącznie ze względu na specyfikę projektową, aby móc zaobserwować więcej korelacji pomiędzy poszczególnymi państwami. Agregacja została przeprowadzona ręcznie ze względu na stosunkowo niewielką liczbę wierszy, która finalnie wynosi 280. \\
 Państwa, dla których była pominięta liczba czołgów oraz te, które posiadały jedynie skrótowe informacje zostały w procesie webscrapingu pominięte.\\
 \indent Informacje o sojuszach między krajami zostały pobrane ze strony\cite{alliance} w formie pliku o nazwie ``alliance\_v4.1\_by\_directed`` z rozszerzeniem .csv. Dane użyteczne z perspektywy tematyki projektu znajdują się w kolumnach \textit{state\_name1, state\_name2, dyad\_st\_year, dyad\_end\_year} i zawierają odpowiednio: pierwsze dwie: nazwy krajów, kolejne lata rozpoczęcia i zakończenia sojuszu. Dane uzyskane z tej strony są spójne. Ze względu na szeroką rozpiętość czasową zawartych w tym zbiorze informacji, do analizy zostały uwzględnione tylko te sojusze, które nie posiadają daty zakończenia. Jest to podyktowane faktem posiadania jedynie bieżących informacji o ilościach uzbrojenia dla konkretnych krajów. Analizowanie danych historycznych w tym kontekście wydaje się pozbawione sensu, ponieważ połączenia między ilościami posiadanych czołgów a przeszłymi sojuszami byłyby niemiarodajne. Jesteśmy świadomi faktu, że jest to metoda podatna na błędy, wynikające chociażby z braku znajomości konkretnej daty zakończenia sojuszu, ale sugerując się wysoką jakością pozostałych pobranych danych, zakładamy, że do realizowanego projektu jest to podejście właściwe.\\
@@ -49,7 +50,7 @@ Nazwy krajów zostały zunifikowane dla obu tabel, zmiany zostały wprowadzone w
 
 \subsubsection{Baza danych}
 Ze względu na stosunkowo niedużą ilość indywidualnych danych została wykorzystana baza danych SQLite.\\
-Baza danych będzie składać się z trzech, połączonych kluczami obcymi, tabel \textit{Tank, Country, Alliance}.
+Baza danych składa się z trzech tabel \textit{Tank, Country, Alliance}.
 Relacyjny model bazy danych nie uległ zmianom w stosunku do formy przedstawionej w koncepcji wykonania projektu.
 \begin{figure}[H]
     \centering \includegraphics[width=0.8\linewidth]{tex/relacyjna_baza_danych.png}
@@ -107,7 +108,3 @@ Ten scenariusz użycia aplikacji pozwala na wykreślnie grafu sojuszy dla wybran
     \caption{Graf powiązań.}
     \label{fig:alliance_graph}
 \end{figure}
-
-\section{Odstępstwa od koncepcji}
-Część wykresów posiada niewiele danych - wynika to z różnorodności posiadanego uzbrojenia przez dane państwa.
-\\??

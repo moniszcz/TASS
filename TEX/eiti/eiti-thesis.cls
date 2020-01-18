@@ -264,6 +264,12 @@
 \newcommand{\album}[1]{
     \newcommand{\@album}{#1}
 }
+\newcommand{\albumm}[1]{
+    \newcommand{\@albumm}{#1}
+}
+\newcommand{\authorr}[1]{
+    \newcommand{\@authorr}{#1}
+}
 % \newcommand{\promotor}[1]{
 %     \newcommand{\@promotor}{#1}
 % }
@@ -285,9 +291,7 @@
         %\sffamily
         \includegraphics[width=\textwidth]{eiti/header.png} \\
         \hfill \break
-        \hfill \break
         % Instytut \@instytut \\
-        \hfill \break
         % \hfill \break
         % \hfill \break
         % \ifnum \pdf@strcmp{\ThesisType}{Engineer} = 0
@@ -296,10 +300,8 @@
         % \ifnum \pdf@strcmp{\ThesisType}{Master} = 0
         %     \includegraphics[width=\textwidth]{eiti/title-mgr.png} \\
         % \fi
-        \hfill \break
         % na~kierunku \@kierunek \\
         % w~specjalności \@specjalnosc \\
-        \hfill \break
         \Huge
         \@tytulPrzedmiotu \\
         \hfill \break
@@ -310,9 +312,21 @@
         \hfill \break
         \hfill \break
         \hfill \break
+        \hfill \break
+        \hfill \break
+        \hfill \break
+        \hfill \break
+        \hfill \break
+        \hfill \break
         \Large
         \@author \\
-        % \normalsize
+        \normalsize
+        \@album \\
+        \Large
+        \@authorr \\
+        \normalsize
+        \@albumm \\
+        \normalsize
         % Numer~albumu \@album \\
         \hfill \break
         % promotor \\
