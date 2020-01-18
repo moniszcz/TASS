@@ -11,7 +11,6 @@ const downloadData = async (endpoint, params) => {
   }
   try {
     const response = await axios.get(url, { params });
-    console.log(response);
     return response.data;
   } catch (err) {
     return;

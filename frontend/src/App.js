@@ -42,7 +42,6 @@ class App extends React.Component {
       await downloadData(config.API_ENDPOINTS.SELLERS, {})
     ]);
     dismissToasts();
-    console.log('response', response);
     const { tankTypes } = response[0];
     const { countries } = response[1];
     const { sellers } = response[2];
