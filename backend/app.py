@@ -55,8 +55,6 @@ def return_sellers():
 
     session.close()
 
-    print(response)
-
     return jsonify({"sellers": response})
 
 
