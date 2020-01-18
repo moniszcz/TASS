@@ -1,6 +1,7 @@
 import React from 'react';
 import * as d3 from 'd3';
 import './Graph.css';
+import 'd3-scale-chromatic';
 
 // https://bl.ocks.org/heybignick/3faf257bbbbc7743bb72310d03b86ee8
 
@@ -44,6 +45,13 @@ class Graph extends React.Component {
     const xExtent = [50, width];
     const yExtent = [50, height];
     const dataset = this.props.dataset;
+    const linkGroups = dataset.links.map(link => link.group);
+    const extent = [Math.min(...linkGroups), Math.max(...linkGroups)];
+
+    const linearScale = d3
+      .scaleSequential()
+      .domain(extent)
+      .interpolator(d3.interpolateTurbo);
 
     this.svg.selectAll('*').remove();
 
@@ -69,7 +77,11 @@ class Graph extends React.Component {
       .data(dataset.links)
       .enter()
       .append('line')
-      .style('stroke', '#aaa');
+      .style('stroke', d => {
+        if (d.group !== null) {
+          return linearScale(d.group);
+        } else return '#aaa';
+      });
 
     // Initialize the nodes
     const node = this.svg
@@ -91,8 +103,10 @@ class Graph extends React.Component {
       .append('circle')
       .attr('r', 5)
       .style('fill', d => {
+        if (d.input) return 'red';
         if (d.name === this.props.target) return 'red';
         else if (d.alliance) return 'green';
+        else if (d.group) return linearScale(d.group);
         else return '#428bca';
         // else return '#69b3a2';
       });
