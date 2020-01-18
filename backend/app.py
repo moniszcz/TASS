@@ -372,8 +372,13 @@ def tank_graph_get():
 
 @app.route("/allianceGraph")
 def alliance_graph_get():
-    country_names = request.args.getlist("country_names[]")
     import itertools
+
+    country_names = request.args.getlist("country_names[]")
+    k_core = request.args.get("k_core")
+    if k_core:
+        k_core = int(k_core)
+    k_core_option = request.args.get("k_core_option") == "true"
 
     session = Session()
     # list of countries ids
@@ -384,39 +389,66 @@ def alliance_graph_get():
             session.query(Country.id).filter_by(name=country_name).one()[0]
         )
         ids_lst.append(country_id)
-    print(ids_lst)
 
-    countries = []
-    for c_id in ids_lst:
-        alliances = session.query(Alliance.country2_id).filter_by(
-            country1_id=c_id
-        )
-        for alliance in alliances:
-            countries.append(alliance[0])
-
-    countries_all = []
-    for item in itertools.chain(countries, ids_lst):
-        countries_all.append(item)
-
-    countries_alliance = sorted(set(countries_all))
-
-    nodes = []
-    for i in countries_alliance:
-        country_n = session.query(Country.name).filter_by(id=i).one()[0]
-        if i in ids_lst:
-            nodes.append({"id": i, "name": country_n, "input": True})
-        else:
-            nodes.append({"id": i, "name": country_n})
-
-    print(nodes)
-    links = []
+    edges = []
+    edges_graph = []
     for (i, c_id) in enumerate(ids_lst):
         alliance_query = session.query(Alliance.country2_id).filter_by(
             country1_id=c_id
         )
         for instance in alliance_query:
-            links.append({"source": c_id, "target": instance[0], "group": i})
-    print(links)
+            edges.append({"source": c_id, "target": instance[0], "group": i})
+            edges_graph.append((c_id, instance[0]))
+
+    if not k_core_option:
+        countries = []
+        for c_id in ids_lst:
+            alliances = session.query(Alliance.country2_id).filter_by(
+                country1_id=c_id
+            )
+            for alliance in alliances:
+                countries.append(alliance[0])
+
+        countries_all = []
+        for item in itertools.chain(countries, ids_lst):
+            countries_all.append(item)
+
+        countries_alliance = sorted(set(countries_all))
+
+        nodes = []
+        for i in countries_alliance:
+            country_n = session.query(Country.name).filter_by(id=i).one()[0]
+            if i in ids_lst:
+                nodes.append({"id": i, "name": country_n, "input": True})
+            else:
+                nodes.append({"id": i, "name": country_n})
+        links = edges
+
+    if k_core_option:
+        G = nx.Graph()
+        G.add_edges_from(edges_graph)
+        G.to_undirected()
+        G1 = nx.k_core(G, k=k_core)
+        g = nx.to_dict_of_lists(G1)
+
+        links = []
+        for i, c_id in enumerate(ids_lst):
+            for key, val in g.items():
+                for j in range(len(val)):
+                    if key == c_id:
+                        links.append(
+                            {"source": key, "target": val[j], "group": i}
+                        )
+
+        nodes = []
+        for key in g.keys():
+            country_name = (
+                session.query(Country.name).filter_by(id=key).one()[0]
+            )
+            if key in ids_lst:
+                nodes.append({"id": key, "name": country_name, "input": True})
+            else:
+                nodes.append({"id": key, "name": country_name})
 
     session.close()
 

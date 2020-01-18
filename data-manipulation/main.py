@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from models import Alliance, Country, Tank
 
 if __name__ == "__main__":
-    engine = db.create_engine("sqlite:///foo.db")
+    engine = db.create_engine("sqlite:///main.db")
 
     Session = sessionmaker(bind=engine)
 
@@ -49,5 +49,7 @@ if __name__ == "__main__":
     print()
     # alliance = session.query(Alliance).one()
     # print(alliance.country1)
+
+    # session.query(Country).filter(Country..name=tank_name)
     for instance in session.query(Alliance).all():
         print(f"[{instance.country1.name}, {instance.country2.name}]")
