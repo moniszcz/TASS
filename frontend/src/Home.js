@@ -12,8 +12,6 @@ class Home extends React.Component {
           rounded
         />
         <h1>Tankify</h1>
-        <h2>Motto</h2>
-        <h3>Some catchy text here</h3>
       </>
     );
   }
