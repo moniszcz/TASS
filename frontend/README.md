@@ -1,14 +1,13 @@
 ## Setup
 
-`yarn install`
+1. Make sure you have installed nodejs and yarn package manager.
+2. Install dependencies `yarn install`
+3. Run application `yarn start`
 
-`yarn start`
-
-
+---
 Everything below is automatically generated from create-react-app.
 
 ---
-
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 

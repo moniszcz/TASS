@@ -1,9 +1,11 @@
 # Setup
 
-`pip install -r requirements.txt`
+Tested with python 3.7.
 
-`export/set FLASK_APP=app.py`
+1. Install dependencies (preferably in virtual env) `pip install -r requirements.txt`
 
-`export/set FLASK_ENV=development`
+2. Set env variables necessary for flask (export for unix, set for windows) 
+   - `export/set FLASK_APP=app.py` 
+   - `export/set FLASK_ENV=development`
 
-`flask run`
+3. Run appliaction `flask run`

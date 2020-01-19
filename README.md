@@ -1,7 +1,7 @@
 # TASS
 https://tankify.netlify.com
 
-![Landing Page](./TEX/tex/landing_page.PNG)
+![Landing Page](./TEX/img/readme.png)
 
 ## Graphs
 ![Alliance](./TEX/tex/alliance.PNG)
