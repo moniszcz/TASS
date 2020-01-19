@@ -1,3 +1,15 @@
+## Setup
+
+`yarn install`
+
+`yarn start`
+
+
+Everything below is automatically generated from create-react-app.
+
+---
+
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
